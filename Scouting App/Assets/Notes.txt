@@ -1,0 +1,10 @@
+Color Palette
+
+- Grey 1
+#111111FF
+- Grey 2
+#1F1F1FFF
+- Maroon 1
+#471522FF
+- Maroon 2
+#722136FF
