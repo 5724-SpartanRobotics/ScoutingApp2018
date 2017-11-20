@@ -43,7 +43,7 @@ public class TableHandler : MonoBehaviour
 			item.TeamNum.text = row.Team.TeamNum.ToString();
 			if (row.NotBroken)
 			{
-				item.TeamStatus.text = "\u2714";
+				item.TeamStatus.text = "\u2705";
 				item.TeamStatus.color = Color.green;
 			}
 			else
