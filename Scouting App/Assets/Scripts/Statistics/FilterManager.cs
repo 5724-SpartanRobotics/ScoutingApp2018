@@ -1,13 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 
 public class FilterManager : MonoBehaviour
 {
 
-	public Button sortNameBtn;
-	public Button sortNumBtn;
+	public Button SortNameBtn;
+	public Button SortNumBtn;
 
 	private bool nameActive = false;
 	private bool numActive = false;
@@ -15,60 +13,45 @@ public class FilterManager : MonoBehaviour
 	public Color unselected;
 	public Color selected;
 
+	public GameObject TableObj;
 	private TableHandler tableScript;
 
 	private void Start()
 	{
-		//sortNameBtn.onClick.AddListener(() => OnToggle(sortNameBtn.gameObject));
-		//sortNameBtn.onClick.AddListener(() => OnToggle(sortNameBtn.gameObject));
-		
-		tableScript = GameObject.Find("TeamListContent").GetComponent<TableHandler>();
+		tableScript = TableObj.GetComponent<TableHandler>();
+		OnToggle(SortNameBtn.gameObject);
 	}
 
-	public void OnToggle(GameObject btnColor)
+	public void OnToggle(GameObject btn)
 	{
-		if (btnColor == sortNameBtn.gameObject)
+		if (btn == SortNameBtn.gameObject)
 		{
 			if (nameActive == false)
 			{
-				btnColor.GetComponent<Image>().color = selected;
+				btn.GetComponent<Image>().color = selected;
 				nameActive = true;
 
-				Debug.Log("SELECTED");
+				SortNumBtn.GetComponent<Image>().color = unselected;
+				numActive = false;
+
+				Debug.Log("NAME SELECTED");
 
 				tableScript.SortByName();
 			}
-			else if (nameActive == true)
-			{
-				btnColor.GetComponent<Image>().color = unselected;
-				nameActive = false;
-
-				Debug.Log("UNSELECTED");
-
-				//ETHAN UNSELECT FILTER CODE HERE
-
-			}
 		}
-		else if (btnColor == sortNumBtn.gameObject)
+		else if (btn == SortNumBtn.gameObject)
 		{
 			if (numActive == false)
 			{
-				btnColor.GetComponent<Image>().color = selected;
+				btn.GetComponent<Image>().color = selected;
 				numActive = true;
 
-				Debug.Log("SELECTED");
+				SortNameBtn.GetComponent<Image>().color = unselected;
+				nameActive = false;
+
+				Debug.Log("NUMBER SELECTED");
 
 				tableScript.SortByNumber();
-
-			}
-			else if (numActive == true)
-			{
-				btnColor.GetComponent<Image>().color = unselected;
-				numActive = false;
-
-				Debug.Log("UNSELECTED");
-
-				//ETHAN UNSELECT FILTER CODE HERE
 
 			}
 		}

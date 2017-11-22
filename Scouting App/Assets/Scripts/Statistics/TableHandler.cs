@@ -1,4 +1,4 @@
-﻿using ScoutingApp;
+using ScoutingApp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,7 +52,7 @@ public class TableHandler : MonoBehaviour
 				item.TeamStatus.color = Color.red;
 			}
 
-			item.transform.parent = ContentPanel.transform;
+			item.transform.SetParent(ContentPanel.transform, false);
 			item.transform.localScale = Vector3.one;
 		}
 	}
