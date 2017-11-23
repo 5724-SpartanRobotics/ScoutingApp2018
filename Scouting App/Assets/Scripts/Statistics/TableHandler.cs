@@ -30,13 +30,16 @@ public class TableHandler : MonoBehaviour
 
 	}
 
-	private void RedrawList()
+	public void RedrawList()
 	{
 		foreach (Transform child in ContentPanel.transform)
 			Destroy(child.gameObject);
 
 		foreach (TableRow row in table.rows)
 		{
+			if (!row.IsVisible)
+				continue;
+
 			GameObject newTeam = Instantiate(TeamItemPrefab) as GameObject;
 			TeamListItem item = newTeam.GetComponent<TeamListItem>();
 			item.TeamName.text = row.Team.TeamName;
@@ -150,7 +153,7 @@ public class TableHandler : MonoBehaviour
 		public double GearAvg { get; private set; }
 		public double ClimbAvg { get; private set; }
 		public bool NotBroken { get; private set; }
-
+		public bool IsVisible { get; set; } = true;
 
 		public TableRow(Team team)
 		{
