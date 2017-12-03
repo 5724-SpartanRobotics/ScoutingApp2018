@@ -7,18 +7,18 @@ public class FilterManager : MonoBehaviour
 	public Button SortNameBtn;
 	public Button SortNumBtn;
 
-	private bool nameActive = false;
-	private bool numActive = false;
+	private bool _NameActive = false;
+	private bool _NumActive = false;
 
-	public Color unselected;
-	public Color selected;
+	public Color Unselected;
+	public Color Selected;
 
 	public GameObject TableObj;
-	private TableHandler tableScript;
+	private TableHandler _TableScript;
 
 	private void Start()
 	{
-		tableScript = TableObj.GetComponent<TableHandler>();
+		_TableScript = TableObj.GetComponent<TableHandler>();
 		OnToggle(SortNameBtn.gameObject);
 	}
 
@@ -26,32 +26,28 @@ public class FilterManager : MonoBehaviour
 	{
 		if (btn == SortNameBtn.gameObject)
 		{
-			if (nameActive == false)
+			if (_NameActive == false)
 			{
-				btn.GetComponent<Image>().color = selected;
-				nameActive = true;
+				btn.GetComponent<Image>().color = Selected;
+				_NameActive = true;
 
-				SortNumBtn.GetComponent<Image>().color = unselected;
-				numActive = false;
+				SortNumBtn.GetComponent<Image>().color = Unselected;
+				_NumActive = false;
 
-				Debug.Log("NAME SELECTED");
-
-				tableScript.SortByName();
+				_TableScript.SortByName();
 			}
 		}
 		else if (btn == SortNumBtn.gameObject)
 		{
-			if (numActive == false)
+			if (_NumActive == false)
 			{
-				btn.GetComponent<Image>().color = selected;
-				numActive = true;
+				btn.GetComponent<Image>().color = Selected;
+				_NumActive = true;
 
-				SortNameBtn.GetComponent<Image>().color = unselected;
-				nameActive = false;
+				SortNameBtn.GetComponent<Image>().color = Unselected;
+				_NameActive = false;
 
-				Debug.Log("NUMBER SELECTED");
-
-				tableScript.SortByNumber();
+				_TableScript.SortByNumber();
 
 			}
 		}

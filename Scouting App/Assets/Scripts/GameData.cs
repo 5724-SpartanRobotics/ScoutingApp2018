@@ -2,8 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace ScoutingApp
+namespace ScoutingApp.GameData
 {
+	public class DataStorage
+	{
+		public static DataStorage Instance { get; } = new DataStorage();
+		public List<Team> Teams { get; } = new List<Team>();
+
+		public DataStorage()
+		{
+			if (Instance != null)
+				throw new ApplicationException("Cannot create more than one instance of DataStorage!");
+		}
+	}
+
 	public class Team : BaseSerializableData
 	{
 		public string TeamName { get; set; }

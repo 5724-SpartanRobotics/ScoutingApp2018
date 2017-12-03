@@ -30,7 +30,7 @@ public class SearchHandler : MonoBehaviour
 
 	private void Search(string text)
 	{
-		foreach (TableRow row in tableScript.table.rows)
+		foreach (TableRow row in tableScript.TableObj.Rows)
 			if (!row.Team.TeamName.ToLowerInvariant().Contains(text) && !row.Team.TeamNum.ToString().ToLowerInvariant().Contains(text))
 				row.IsVisible = false;
 			else

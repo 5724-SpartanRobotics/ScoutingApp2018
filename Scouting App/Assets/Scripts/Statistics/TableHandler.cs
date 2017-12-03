@@ -1,4 +1,4 @@
-using ScoutingApp;
+using ScoutingApp.GameData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class TableHandler : MonoBehaviour
 {
-	public Table table;
+	public Table TableObj;
 	public GameObject TeamItemPrefab;
 	public GameObject ContentPanel;
 
@@ -14,20 +14,13 @@ public class TableHandler : MonoBehaviour
 	void Start()
 	{
 		System.Random rand = new System.Random();
-		List<Team> teams = new List<Team>();
 		int numTeams = rand.Next(100) + 10;
 
 		for (int i = 0; i < numTeams; i++)
-			teams.Add(new Team(rand));
+			DataStorage.Instance.Teams.Add(new Team(rand));
 
-		table = new Table(teams);
+		TableObj = new Table();
 		RedrawList();
-	}
-
-	// Update is called once per frame
-	void Update()
-	{
-
 	}
 
 	public void RedrawList()
@@ -35,7 +28,7 @@ public class TableHandler : MonoBehaviour
 		foreach (Transform child in ContentPanel.transform)
 			Destroy(child.gameObject);
 
-		foreach (TableRow row in table.rows)
+		foreach (TableRow row in TableObj.Rows)
 		{
 			if (!row.IsVisible)
 				continue;
@@ -62,33 +55,31 @@ public class TableHandler : MonoBehaviour
 
 	public void SortByName()
 	{
-		table.SortByName();
+		TableObj.SortByName();
 		RedrawList();
 	}
 
 	public void SortByNumber()
 	{
-		table.SortByNum();
+		TableObj.SortByNum();
 		RedrawList();
 	}
 
 	public class Table
 	{
-		string[] tableHeadings = { "Team Name", "Team Number", "Climb Rope %", "Avg. Ball Score",
-			"Avg. Auto Ball Score", "Avg. Gear Score", "Auto Gear Score %", "Last End Status"};
-		public List<TableRow> rows;
+		public List<TableRow> Rows;
 
-		public Table(List<Team> teams)
+		public Table()
 		{
-			rows = new List<TableRow>();
+			Rows = new List<TableRow>();
 
-			foreach (Team team in teams)
-				rows.Add(new TableRow(team));
+			foreach (Team team in DataStorage.Instance.Teams)
+				Rows.Add(new TableRow(team));
 		}
 
 		public void SortByName(bool reverse = false)
 		{
-			rows.Sort((row1, row2) =>
+			Rows.Sort((row1, row2) =>
 			{
 				if (row1.NotBroken == row2.NotBroken)
 					return row1.Team.TeamName.CompareTo(row2.Team.TeamName);
@@ -96,12 +87,12 @@ public class TableHandler : MonoBehaviour
 					return row1.NotBroken ? -1 : 1;
 			});
 			if (reverse)
-				rows.Reverse();
+				Rows.Reverse();
 		}
 
 		public void SortByNum(bool reverse = false)
 		{
-			rows.Sort((row1, row2) =>
+			Rows.Sort((row1, row2) =>
 			{
 				if (row1.NotBroken == row2.NotBroken)
 					return row1.Team.TeamNum.CompareTo(row2.Team.TeamNum);
@@ -109,13 +100,13 @@ public class TableHandler : MonoBehaviour
 					return row1.NotBroken ? -1 : 1;
 			});
 			if (reverse)
-				rows.Reverse();
+				Rows.Reverse();
 		}
 
 		public void DebugPrint()
 		{
 			string s = string.Empty;
-			foreach (TableRow row in rows)
+			foreach (TableRow row in Rows)
 				s += row.Columns.Aggregate((current, next) => current + "\t" + next) + "\n";
 			Debug.Log(s);
 		}
