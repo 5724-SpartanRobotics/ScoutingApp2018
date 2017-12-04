@@ -9,6 +9,8 @@ public class TableHandler : MonoBehaviour
 	public Table TableObj;
 	public GameObject TeamItemPrefab;
 	public GameObject ContentPanel;
+	public Sprite XSprite;
+	public Sprite CheckSprite;
 
 	// Use this for initialization
 	void Start()
@@ -39,12 +41,12 @@ public class TableHandler : MonoBehaviour
 			item.TeamNum.text = row.Team.TeamNum.ToString();
 			if (row.NotBroken)
 			{
-				item.TeamStatus.text = "\u2705";
+				item.TeamStatus.sprite = CheckSprite;
 				item.TeamStatus.color = Color.green;
 			}
 			else
 			{
-				item.TeamStatus.text = "X";
+				item.TeamStatus.sprite = XSprite;
 				item.TeamStatus.color = Color.red;
 			}
 

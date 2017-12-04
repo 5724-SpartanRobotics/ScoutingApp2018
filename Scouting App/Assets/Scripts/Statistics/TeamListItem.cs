@@ -5,5 +5,5 @@ public class TeamListItem : MonoBehaviour
 {
 	public Text TeamName;
 	public Text TeamNum;
-	public Text TeamStatus;
+	public Image TeamStatus;
 }
