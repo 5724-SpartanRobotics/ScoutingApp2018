@@ -4,39 +4,30 @@ using static TableHandler;
 
 public class SearchHandler : MonoBehaviour
 {
-	private TableHandler tableScript;
-	public GameObject TableObj;
-	public GameObject SearchText;
-	private Text searchTextComp;
-	private string prevText = string.Empty;
-
-	void Start()
-	{
-		tableScript = TableObj.GetComponent<TableHandler>();
-		searchTextComp = SearchText.GetComponent<Text>();
-	}
+	public TableHandler TableScript;
+	public Text SearchText;
+	private string _PrevText = string.Empty;
 
 	void Update()
 	{
-		string newText = searchTextComp.text.ToLowerInvariant();
+		string newText = SearchText.text.ToLowerInvariant();
 
-		if (prevText != newText)
+		if (_PrevText != newText)
 		{
 			Search(newText);
-			prevText = newText;
+			_PrevText = newText;
 		}
-
 	}
 
 	private void Search(string text)
 	{
-		foreach (TableRow row in tableScript.TableObj.Rows)
-			if (!row.Team.TeamName.ToLowerInvariant().Contains(text) && !row.Team.TeamNum.ToString().ToLowerInvariant().Contains(text))
-				row.IsVisible = false;
-			else
+		foreach (TableRow row in TableScript.TableObj.Rows)
+			if (row.Team.TeamName.ToLowerInvariant().Contains(text) || row.Team.TeamNum.ToString().ToLowerInvariant().Contains(text))
 				row.IsVisible = true;
+			else
+				row.IsVisible = false;
 
-		tableScript.RedrawList();
+		TableScript.RedrawList();
 	}
 
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using UnityEngine;
 using ZXing;
@@ -109,38 +109,122 @@ namespace ScoutingApp
 			return data;
 		}
 
+		// Yes I know it's at the end. I don't care. I'm calling it a header, not a footer.
+		const int QR_HEADER_LEN = 20;
 
-		public static Texture2D[] EncodeToQRCodes(Stream stream)
+		public static byte[] DecodeQRCode(Texture2D texture, out int qrNumber, out int totalQRs)
 		{
-			const int max = 2500;
-			MD5 md5 = MD5.Create();
-			Texture2D[] textures = new Texture2D[(int)Mathf.Ceil(stream.Length / max)];
+			QRCodeReader reader = new QRCodeReader();
+			Color32[] color32Data = texture.GetPixels32();
+			LuminanceSource source = new Color32LuminanceSource(color32Data, texture.width, texture.height);
+			Binarizer binarizer = new HybridBinarizer(source);
+			BinaryBitmap bmp = new BinaryBitmap(binarizer);
 
-			for (int codeIdx = 0; codeIdx < Mathf.Ceil(stream.Length / max); codeIdx++)
+			Dictionary<DecodeHintType, object> decodeHints = new Dictionary<DecodeHintType, object>
 			{
-				byte[] data = new byte[max + 18];
+				{ DecodeHintType.TRY_HARDER, true },
+				{ DecodeHintType.POSSIBLE_FORMATS, BarcodeFormat.QR_CODE }
+			};
+			Result result = reader.decode(bmp, decodeHints);
+
+			if (result != null)
+			{
+				List<byte[]> byteSegments = (List<byte[]>)result.ResultMetadata[ResultMetadataType.BYTE_SEGMENTS];
+				int totalLen = byteSegments.Select(x => x.Length).Sum();
+				byte[] data = new byte[totalLen];
+				int idx = 0;
+				foreach (byte[] seg in byteSegments)
+				{
+					seg.CopyTo(data, idx);
+					idx += seg.Length;
+				}
+
+				bool valid = true;
+				MD5 md5 = MD5.Create();
+				byte[] hash = md5.ComputeHash(data, 0, data.Length - QR_HEADER_LEN);
+
+				for (int i = 0; i < hash.Length; i++)
+				{
+					if (data[data.Length - (QR_HEADER_LEN - i)] != hash[i])
+					{
+						valid = false;
+						break;
+					}
+				}
+
+				if (valid)
+				{
+					qrNumber = data[data.Length - 4] << 8;
+					qrNumber |= data[data.Length - 3];
+					totalQRs = data[data.Length - 2] << 8;
+					totalQRs |= data[data.Length - 1];
+					MemoryStream ret = new MemoryStream(data.Length - QR_HEADER_LEN);
+					ret.Write(data, 0, data.Length - QR_HEADER_LEN);
+					return ret.ToArray();
+				}
+			}
+			qrNumber = 0;
+			totalQRs = 0;
+			return null;
+		}
+
+		public static readonly Dictionary<int, int> _QrVersionSizes = new Dictionary<int, int>()
+		{
+			{ 20, 858 },
+			{ 25, 1273 },
+			{ 30, 1732 },
+			{ 31, 1840 },
+			{ 32, 1952 },
+			{ 33, 2068 },
+			{ 34, 2188 },
+			{ 35, 2303 },
+			{ 36, 2431 },
+			{ 37, 2563 },
+			{ 38, 2699 },
+			{ 39, 2809 },
+			{ 40, 2953 }
+		};
+
+		public static Texture2D[] EncodeToQRCodes(Stream stream, int qrVersion)
+		{
+			int max = _QrVersionSizes[qrVersion] - QR_HEADER_LEN;
+			MD5 md5 = MD5.Create();
+
+			int qrTotal = (int)Mathf.Ceil((float)stream.Length / max);
+
+			Texture2D[] textures = new Texture2D[qrTotal];
+
+			for (int codeIdx = 0; codeIdx < qrTotal; codeIdx++)
+			{
+				byte[] data = new byte[max + QR_HEADER_LEN];
 				stream.Read(data, 0, max);
 
 				byte[] hash = md5.ComputeHash(data, 0, max);
 				for (int i = 0; i < hash.Length; i++)
 					data[max + i] = hash[i];
-				data[data.Length - 2] = (byte)((codeIdx >> 8) & 0xFF);
-				data[data.Length - 1] = (byte)(codeIdx & 0xFF);
+				data[data.Length - 4] = (byte)((codeIdx >> 8) & 0xFF);
+				data[data.Length - 3] = (byte)(codeIdx & 0xFF);
+				data[data.Length - 2] = (byte)((qrTotal >> 8) & 0xFF);
+				data[data.Length - 1] = (byte)(qrTotal & 0xFF);
 
 				QRCodeWriter qrCoder = new QRCodeWriter();
 
 				int width = 300;
 				Dictionary<EncodeHintType, object> hints = new Dictionary<EncodeHintType, object>
 				{
-					{ EncodeHintType.MARGIN, -1 },
-					{ EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L }
+					{ EncodeHintType.MARGIN, 1 },
+					{ EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L },
+					{ EncodeHintType.QR_VERSION, qrVersion }
 				};
 				BitMatrix pixels = qrCoder.encode(GetStringFromBytes(data), BarcodeFormat.QR_CODE, width, width, hints);
 
 				bool[][] newPixels = StripBoarder(pixels);
 				width = newPixels.Length;
 
-				textures[codeIdx] = new Texture2D(width, width, TextureFormat.RGB24, false);
+				textures[codeIdx] = new Texture2D(width, width, TextureFormat.RGB24, false)
+				{
+					filterMode = FilterMode.Point // Make resizing sharper so the reader can read better
+				};
 
 				for (int i = 0; i < width; i++)
 					for (int j = 0; j < width; j++)
@@ -175,29 +259,21 @@ namespace ScoutingApp
 		{
 			bool[][] newPixels;
 			int x;
-			bool end = false;
 
 			for (x = 0; x < pixels.Width; x++)
-			{
 				if (pixels[x, x])
-				{
-					end = true;
 					break;
-				}
 
-				if (end)
-					break;
-			}
-			x -= 5; // Leave a five pixel wide boarder
+			const int borderSize = 20;
+			int sizeCovered = pixels.Dimension - x * 2;
+			int newSize = sizeCovered + borderSize * 2;
+			newPixels = new bool[newSize][];
+			for (int i = 0; i < newSize; i++)
+				newPixels[i] = new bool[newSize];
 
-			int len = pixels.Dimension - x * 2;
-			newPixels = new bool[len][];
-			for (int i = 0; i < len; i++)
-				newPixels[i] = new bool[len];
-
-			for (int i = 0; i < len; i++)
-				for (int j = 0; j < len; j++)
-					newPixels[i][j] = pixels[i + x, j + x];
+			for (int i = 0; i < sizeCovered; i++)
+				for (int j = 0; j < sizeCovered; j++)
+					newPixels[i + borderSize][j + borderSize] = pixels[i + x, j + x];
 
 			return newPixels;
 		}

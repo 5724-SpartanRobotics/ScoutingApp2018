@@ -15,12 +15,6 @@ public class TableHandler : MonoBehaviour
 	// Use this for initialization
 	void Start()
 	{
-		System.Random rand = new System.Random();
-		int numTeams = rand.Next(100) + 10;
-
-		for (int i = 0; i < numTeams; i++)
-			DataStorage.Instance.Teams.Add(new Team(rand));
-
 		TableObj = new Table();
 		RedrawList();
 	}
@@ -159,7 +153,7 @@ public class TableHandler : MonoBehaviour
 
 			ClimbAvg = team.Matches.Average(match => match.ClimbedRope ? 1 : 0);
 
-			NotBroken = team.Matches.OrderByDescending(match => match.MatchNum).First().WorksAtEnd;
+			NotBroken = team.Matches.OrderByDescending(match => match.MatchNum).First().WorksPostMatch;
 		}
 	}
 }

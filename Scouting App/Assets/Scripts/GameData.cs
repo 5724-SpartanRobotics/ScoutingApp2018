@@ -1,18 +1,154 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace ScoutingApp.GameData
 {
 	public class DataStorage
 	{
 		public static DataStorage Instance { get; } = new DataStorage();
-		public List<Team> Teams { get; } = new List<Team>();
+		public TeamList Teams { get; } = new TeamList();
+		const ushort DATA_VERSION = 0;
 
 		public DataStorage()
 		{
 			if (Instance != null)
 				throw new ApplicationException("Cannot create more than one instance of DataStorage!");
+		}
+
+		/// <summary>
+		/// Deserializes the data in the Stream and adds it to this instance.
+		/// </summary>
+		/// <param name="stream"></param>
+		public void DeserializeData(Stream stream)
+		{
+			int isCompressed = stream.ReadByte();
+			if (isCompressed == 0)
+			{
+				using (BinaryReader reader = new BinaryReader(stream, Encoding.UTF8, true))
+				{
+					ushort version = reader.ReadUInt16();
+					if (version != DATA_VERSION)
+						throw new FormatException($"Version number {version} is not a supported data version!");
+					int count = reader.ReadInt32();
+
+					for (int i = 0; i < count; i++)
+					{
+						Team team = new Team();
+						team.Deserialize(reader);
+						Teams.Add(team);
+					}
+				}
+			}
+			else
+			{
+				throw new NotImplementedException();
+			}
+		}
+
+		/// <summary>
+		/// Serializes the data in this instance to the stream.
+		/// </summary>
+		/// <returns></returns>
+		public void SerializeData(Stream stream)
+		{
+			MemoryStream uncompressed = new MemoryStream();
+
+			using (BinaryWriter writer = new BinaryWriter(uncompressed, Encoding.UTF8))
+			{
+				MemoryStream compressed = new MemoryStream();
+				byte[] uncompressedBytes;
+				byte[] compressedBytes;
+
+				writer.Write(DATA_VERSION);
+				writer.Write(Teams.Count);
+
+				foreach (Team team in Teams)
+					team.Serialize(writer);
+
+				uncompressedBytes = uncompressed.ToArray();
+
+				compressedBytes = uncompressedBytes;
+				if (uncompressedBytes.Length < compressedBytes.Length)
+				{
+					compressed.Position = 0;
+					stream.WriteByte(1);
+					compressed.CopyTo(stream);
+				}
+				else
+				{
+					uncompressed.Position = 0;
+					stream.WriteByte(0);
+					uncompressed.CopyTo(stream);
+				}
+			}
+		}
+	}
+
+	public class TeamList : ICollection<Team>
+	{
+		SortedList<int, Team> _Teams;
+
+		public TeamList()
+		{
+			_Teams = new SortedList<int, Team>();
+		}
+
+		public int Count => _Teams.Count;
+
+		public bool IsReadOnly => false;
+
+		public void Add(Team item)
+		{
+			if (Contains(item))
+				_Teams[item.TeamNum].MergeTeam(item);
+			else
+				_Teams.Add(item.TeamNum, item);
+		}
+
+		public Team this[int teamNum]
+		{
+			get
+			{
+				return _Teams[teamNum];
+			}
+		}
+
+		public void Clear()
+		{
+			_Teams.Clear();
+		}
+
+		public bool Contains(Team team)
+		{
+			return Contains(team.TeamNum);
+		}
+
+		public bool Contains(int num)
+		{
+			return _Teams.ContainsKey(num);
+		}
+
+		public void CopyTo(Team[] array, int arrayIndex)
+		{
+			_Teams.Values.CopyTo(array, arrayIndex);
+		}
+
+		public IEnumerator<Team> GetEnumerator()
+		{
+			return _Teams.Values.GetEnumerator();
+		}
+
+		public bool Remove(Team item)
+		{
+			return _Teams.Remove(item.TeamNum);
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _Teams.Values.GetEnumerator();
 		}
 	}
 
@@ -75,6 +211,33 @@ namespace ScoutingApp.GameData
 			}
 		}
 
+		public void MergeTeam(Team item)
+		{
+			if (TeamNum != item.TeamNum)
+				throw new ArgumentException($"Team {item.TeamNum} != team {TeamNum}");
+
+			if (!string.IsNullOrWhiteSpace(item.Comments))
+				Comments += "\n\n" + item.Comments;
+
+			foreach (Match match in item.Matches)
+			{
+				bool flag = true;
+				Matches.Add(match);
+				foreach (Match thisMatch in Matches)
+				{
+					if (match.Timestamp == thisMatch.Timestamp)
+					{
+						flag = false;
+						break;
+					}
+				}
+				if (flag)
+				{
+					Matches.Add(match);
+				}
+			}
+			Matches.Sort();
+		}
 	}
 
 	public class Match : BaseSerializableData
@@ -89,14 +252,15 @@ namespace ScoutingApp.GameData
 		public bool MovedInAuto { get; set; }
 		public bool AutoGearScore { get; set; }
 		public bool ClimbedRope { get; set; }
-		public bool WorksAtEnd { get; set; }
+		public bool WorksPostMatch { get; set; }
+		public long Timestamp { get; private set; }
 
 		// Test method that creates a random Match with random information
 		public Match(Random rand) : this()
 		{
 			MatchNum = (ushort)(rand.Next(72) + 1);
 			MovedInAuto = rand.NextDouble() < 0.85D;
-			WorksAtEnd = rand.NextDouble() < 0.90D;
+			WorksPostMatch = rand.NextDouble() < 0.90D;
 			AutoBallScore = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
 			AutoGearScore = rand.NextDouble() < 0.3D;
 			BallScore = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
@@ -109,6 +273,8 @@ namespace ScoutingApp.GameData
 			int commentsLen = rand.Next(500);
 			for (int i = 0; i < commentsLen; i++)
 				Comments += PRINTABLE_ASCII[rand.Next(PRINTABLE_ASCII.Length)];
+
+			Timestamp = DateTime.Now.ToBinary();
 		}
 
 		public Match()
@@ -118,12 +284,13 @@ namespace ScoutingApp.GameData
 
 		public override void Serialize(BinaryWriter writer)
 		{
+			writer.Write(Timestamp);
 			writer.Write(MatchNum);
 			writer.Write(AutoBallScore);
 			writer.Write(BallScore);
 			writer.Write(GearScore);
 
-			byte[] bools = SerializerHelper.PackBools(MovedInAuto, AutoGearScore, ClimbedRope, WorksAtEnd);
+			byte[] bools = SerializerHelper.PackBools(MovedInAuto, AutoGearScore, ClimbedRope, WorksPostMatch);
 			writer.Write(bools[0]);
 
 			writer.Write((byte)MatchPos);
@@ -132,6 +299,7 @@ namespace ScoutingApp.GameData
 
 		public override void Deserialize(BinaryReader reader)
 		{
+			Timestamp = reader.ReadInt64();
 			MatchNum = reader.ReadUInt16();
 			AutoBallScore = reader.ReadInt32();
 			BallScore = reader.ReadInt32();
@@ -142,10 +310,15 @@ namespace ScoutingApp.GameData
 			MovedInAuto = bools[0];
 			AutoGearScore = bools[1];
 			ClimbedRope = bools[2];
-			WorksAtEnd = bools[3];
+			WorksPostMatch = bools[3];
 
 			MatchPos = (MatchPosition)reader.ReadByte();
 			Comments = SerializerHelper.ReadString(reader);
+		}
+
+		public int CompareTo(Match other)
+		{
+			return MatchNum.CompareTo(other.MatchNum);
 		}
 	}
 
