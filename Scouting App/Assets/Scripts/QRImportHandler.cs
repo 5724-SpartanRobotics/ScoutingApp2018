@@ -5,7 +5,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ImportHandler : MonoBehaviour
+public class QRImportHandler : MonoBehaviour
 {
 	public RawImage RenderImage;
 	public Text StatusText;
