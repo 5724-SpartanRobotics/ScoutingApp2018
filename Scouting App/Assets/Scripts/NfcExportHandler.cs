@@ -1,5 +1,6 @@
 using ScoutingApp.GameData;
 using System.IO;
+using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -47,6 +48,14 @@ public class NfcExportHandler : MonoBehaviour
 			{
 				MemoryStream stream = new MemoryStream();
 				DataStorage.Instance.SerializeData(stream);
+
+				// Compute hash to verify data integrity after beam
+				MD5 md5 = MD5.Create();
+				stream.Position = 0;
+				byte[] hash = md5.ComputeHash(stream);
+
+				stream.Position = stream.Length;
+				stream.Write(hash, 0, hash.Length);
 
 				_NfcWriter.Call("setMessage", stream.ToArray());
 			}

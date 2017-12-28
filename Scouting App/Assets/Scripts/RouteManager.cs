@@ -74,6 +74,16 @@ public class RouteManager : MonoBehaviour
 			if (Input.GetKey(KeyCode.Escape))
 				NavigateBack();
 		}
+
+		bool openNFC = Options.Inst.Activity.Call<bool>("isNowNFCing");
+
+		if (openNFC)
+		{
+			if (Options.Inst.IsNFCEnabled)
+				LoadImport();
+			else
+				LoadOptions();
+		}
 #endif
 	}
 }

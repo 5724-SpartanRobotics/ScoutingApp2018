@@ -262,7 +262,7 @@ namespace ScoutingApp.GameData
 		}
 	}
 
-	public class Match : BaseSerializableData
+	public class Match : BaseSerializableData, IComparable<Match>
 	{
 		public MatchPosition MatchPos { get; set; }
 		public ushort MatchNum { get; set; }
@@ -340,7 +340,8 @@ namespace ScoutingApp.GameData
 
 		public int CompareTo(Match other)
 		{
-			return MatchNum.CompareTo(other.MatchNum);
+			int comp = MatchNum.CompareTo(other.MatchNum);
+			return comp != 0 ? comp : new DateTime(Timestamp).CompareTo(new DateTime(other.Timestamp));
 		}
 	}
 

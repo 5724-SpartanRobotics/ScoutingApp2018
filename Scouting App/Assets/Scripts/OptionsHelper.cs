@@ -14,7 +14,9 @@ public class OptionsHelper : MonoBehaviour
 	void Start()
 	{
 		NFCCheckmark.enabled = Options.Inst.IsNFCEnabled;
-		if (!Options.Inst.DeviceHasNFC)
+		if (Application.platform != RuntimePlatform.Android)
+			NFCErrorText.text = "Sorry, your platform doesn't support NFC.";
+		else if (!Options.Inst.DeviceHasNFC)
 			NFCErrorText.text = "Sorry, your device doesn't support NFC.";
 		else if (!Options.Inst.NFCSystemOn)
 			NFCErrorText.text = "NFC is not enabled. Try enabling it in settings.";
@@ -119,15 +121,17 @@ public class Options
 
 	private string _OptionsLoc = Path.Combine(Application.persistentDataPath, "options.dat");
 
+	public AndroidJavaObject Activity { get; private set; }
+
 	public Options()
 	{
 		if (Application.platform == RuntimePlatform.Android)
 		{
 			AndroidJavaClass activityClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
 			AndroidJavaClass contextClass = new AndroidJavaClass("android.content.Context");
-			AndroidJavaObject activity = activityClass.GetStatic<AndroidJavaObject>("currentActivity");
+			Activity = activityClass.GetStatic<AndroidJavaObject>("currentActivity");
 
-			AndroidJavaObject nfcManager = activity.Call<AndroidJavaObject>("getSystemService",
+			AndroidJavaObject nfcManager = Activity.Call<AndroidJavaObject>("getSystemService",
 				contextClass.GetStatic<string>("NFC_SERVICE"));
 
 			AndroidJavaObject adapter = nfcManager.Call<AndroidJavaObject>("getDefaultAdapter");
