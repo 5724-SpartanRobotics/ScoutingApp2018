@@ -1,7 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="us.shsrobotics.scoutingapp.androidnfchelper">
 
-    <!-- Source: https://forum.unity.com/threads/nfc-for-android-unity-5-6.485551/-->
     <uses-permission android:name="android.permission.NFC" />
 
     <application android:label="@string/app_name">
@@ -14,7 +13,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Source: https://forum.unity.com/threads/nfc-for-android-unity-5-6.485551/-->
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -23,11 +21,11 @@
                     android:pathPrefix="/scoutingapp:nfcteamdata"
                     android:scheme="vnd.android.nfc" />
             </intent-filter>
-            <!--<meta-data android:name="android.nfc.action.TECH_DISCOVERED" android:resource="@xml/nfc_tech_filter" android:value="true" />
--->
+			
+			<!--Don't use default Unity activity-->
             <meta-data
                 android:name="unityplayer.UnityActivity"
-                android:value="true" />
+                android:value="false" />
         </activity>
     </application>
 </manifest>
