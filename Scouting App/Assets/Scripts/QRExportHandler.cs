@@ -3,11 +3,8 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using ScoutingApp;
-//if UNITY_STANDALONE || UNITY_WEBGL
-//using System.IO.Compression;
-//endif
 
-public class ExportHandler : MonoBehaviour
+public class QRExportHandler : MonoBehaviour
 {
 	public Text ProgressText;
 	public RawImage QRImage;
@@ -22,12 +19,13 @@ public class ExportHandler : MonoBehaviour
 
 		for (int i = 0; i < numTeams; i++)
 			DataStorage.Instance.Teams.Add(new Team(rng));
+		DataStorage.Instance.SaveData();
 
 		MemoryStream memStream = new MemoryStream();
 		DataStorage.Instance.SerializeData(memStream);
 		memStream.Position = 0;
 
-		_Textures = ImageUtils.EncodeToQRCodes(memStream, 25); // TODO make qrVersion configurable
+		_Textures = ImageUtils.EncodeToQRCodes(memStream, Options.Inst.QRVersion, Options.Inst.QRErrorCorrection);
 
 		UpdateStuff();
 	}
@@ -52,8 +50,4 @@ public class ExportHandler : MonoBehaviour
 		UpdateStuff();
 	}
 
-	public void OnGUI()
-	{
-		//GUI.DrawTexture(new Rect(0, (int)(Screen.height * 0.18F), Screen.width, Screen.width), _Textures[_PageIdx], ScaleMode.StretchToFill, false);
-	}
 }

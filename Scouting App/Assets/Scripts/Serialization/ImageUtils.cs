@@ -168,10 +168,18 @@ namespace ScoutingApp
 			return null;
 		}
 
-		public static readonly Dictionary<int, int> _QrVersionSizes = new Dictionary<int, int>()
+		public static readonly Dictionary<int, int> _QrVersionLSizes = new Dictionary<int, int>()
 		{
 			{ 20, 858 },
+			{ 21, 929 },
+			{ 22, 1003 },
+			{ 23, 1091 },
+			{ 24, 1171 },
 			{ 25, 1273 },
+			{ 26, 1367 },
+			{ 27, 1465 },
+			{ 28, 1528 },
+			{ 29, 1628 },
 			{ 30, 1732 },
 			{ 31, 1840 },
 			{ 32, 1952 },
@@ -185,9 +193,93 @@ namespace ScoutingApp
 			{ 40, 2953 }
 		};
 
-		public static Texture2D[] EncodeToQRCodes(Stream stream, int qrVersion)
+		public static readonly Dictionary<int, int> _QrVersionMSizes = new Dictionary<int, int>()
 		{
-			int max = _QrVersionSizes[qrVersion] - QR_HEADER_LEN;
+			{ 20, 666 },
+			{ 21, 711 },
+			{ 22, 779 },
+			{ 23, 857 },
+			{ 24, 911 },
+			{ 25, 997 },
+			{ 26, 1059 },
+			{ 27, 1125 },
+			{ 28, 1190 },
+			{ 29, 1264 },
+			{ 30, 1370 },
+			{ 31, 1452 },
+			{ 32, 1538 },
+			{ 33, 1628 },
+			{ 34, 1722 },
+			{ 35, 1809 },
+			{ 36, 1911 },
+			{ 37, 1989 },
+			{ 38, 2099 },
+			{ 39, 2213 },
+			{ 40, 2331 }
+		};
+
+		public static readonly Dictionary<int, int> _QrVersionQSizes = new Dictionary<int, int>()
+		{
+			{ 20, 482 },
+			{ 21, 509 },
+			{ 22, 565 },
+			{ 23, 611 },
+			{ 24, 661 },
+			{ 25, 715 },
+			{ 26, 751 },
+			{ 27, 805 },
+			{ 28, 868 },
+			{ 29, 908 },
+			{ 30, 982 },
+			{ 31, 1030 },
+			{ 32, 1112 },
+			{ 33, 1168 },
+			{ 34, 1228 },
+			{ 35, 1283 },
+			{ 36, 1351 },
+			{ 37, 1423 },
+			{ 38, 1499 },
+			{ 39, 1579 },
+			{ 40, 1663 }
+		};
+
+		public static readonly Dictionary<int, int> _QrVersionHSizes = new Dictionary<int, int>()
+		{
+			{ 20, 382 },
+			{ 21, 403 },
+			{ 22, 439 },
+			{ 23, 461 },
+			{ 24, 511 },
+			{ 25, 535 },
+			{ 26, 593 },
+			{ 27, 625 },
+			{ 28, 658 },
+			{ 29, 698 },
+			{ 30, 742 },
+			{ 31, 790 },
+			{ 32, 842 },
+			{ 33, 898 },
+			{ 34, 958 },
+			{ 35, 983 },
+			{ 36, 1051 },
+			{ 37, 1093 },
+			{ 38, 1139 },
+			{ 39, 1219 },
+			{ 40, 1273 }
+		};
+
+		public static Texture2D[] EncodeToQRCodes(Stream stream, int qrVersion, ErrorCorrectionLevel errorLvl)
+		{
+			int max = -QR_HEADER_LEN;
+			if (errorLvl == ErrorCorrectionLevel.L)
+				max += _QrVersionLSizes[qrVersion];
+			else if (errorLvl == ErrorCorrectionLevel.M)
+				max += _QrVersionMSizes[qrVersion];
+			else if (errorLvl == ErrorCorrectionLevel.Q)
+				max += _QrVersionQSizes[qrVersion];
+			else if (errorLvl == ErrorCorrectionLevel.H)
+				max += _QrVersionHSizes[qrVersion];
+
 			MD5 md5 = MD5.Create();
 
 			int qrTotal = (int)Mathf.Ceil((float)stream.Length / max);
@@ -213,7 +305,7 @@ namespace ScoutingApp
 				Dictionary<EncodeHintType, object> hints = new Dictionary<EncodeHintType, object>
 				{
 					{ EncodeHintType.MARGIN, 1 },
-					{ EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L },
+					{ EncodeHintType.ERROR_CORRECTION, errorLvl },
 					{ EncodeHintType.QR_VERSION, qrVersion }
 				};
 				BitMatrix pixels = qrCoder.encode(GetStringFromBytes(data), BarcodeFormat.QR_CODE, width, width, hints);

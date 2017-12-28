@@ -3,19 +3,41 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using UnityEngine;
 
 namespace ScoutingApp.GameData
 {
 	public class DataStorage
 	{
-		public static DataStorage Instance { get; } = new DataStorage();
+		private static DataStorage _Inst;
+		public static DataStorage Instance
+		{
+			get
+			{
+				if (_Inst == null)
+				{
+					_Inst = new DataStorage();
+					_Inst.LoadData();
+				}
+				return _Inst;
+			}
+		}
+
 		public TeamList Teams { get; } = new TeamList();
 		const ushort DATA_VERSION = 0;
+		private string _SaveLoc = Path.Combine(Application.persistentDataPath, "save.dat");
 
-		public DataStorage()
+		public void LoadData()
 		{
-			if (Instance != null)
-				throw new ApplicationException("Cannot create more than one instance of DataStorage!");
+			if (File.Exists(_SaveLoc))
+				using (FileStream fs = File.OpenRead(_SaveLoc))
+					DeserializeData(fs);
+		}
+
+		public void SaveData()
+		{
+			using (FileStream fs = File.Open(_SaveLoc, FileMode.Create))
+				SerializeData(fs);
 		}
 
 		/// <summary>
@@ -160,7 +182,7 @@ namespace ScoutingApp.GameData
 		public string Comments { get; set; }
 
 		// Test method that creates a random Team with random information and match data
-		public Team(Random rand) : this()
+		public Team(System.Random rand) : this()
 		{
 			const string PRINTABLE_ASCII = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
 			int nameLen = rand.Next(5) + 5;
@@ -256,7 +278,7 @@ namespace ScoutingApp.GameData
 		public long Timestamp { get; private set; }
 
 		// Test method that creates a random Match with random information
-		public Match(Random rand) : this()
+		public Match(System.Random rand) : this()
 		{
 			MatchNum = (ushort)(rand.Next(72) + 1);
 			MovedInAuto = rand.NextDouble() < 0.85D;
