@@ -358,7 +358,7 @@ namespace ScoutingApp.GameData
 		public int CompareTo(Match other)
 		{
 			int comp = MatchNum.CompareTo(other.MatchNum);
-			return comp != 0 ? comp : new DateTime(Timestamp).CompareTo(new DateTime(other.Timestamp));
+			return comp != 0 ? comp : DateTime.FromBinary(Timestamp).CompareTo(DateTime.FromBinary(other.Timestamp));
 		}
 	}
 

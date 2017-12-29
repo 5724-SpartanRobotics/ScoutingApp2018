@@ -56,13 +56,20 @@ public class NfcImportHandler : MonoBehaviour
 								byte[] data = record.Call<byte[]>("getPayload");
 								if (Encoding.UTF8.GetString(data) == "us.shsrobotics.scoutingapp")
 									continue;
+								Debug.Log("Data Payload: " + Convert.ToBase64String(data));
 
+								const int HASH_LEN = 16;
+								const int LEN_LEN = 4;
+								const int HEADER_LEN = HASH_LEN + LEN_LEN;
+
+								int len = BitConverter.ToInt32(data, HASH_LEN);
 								MD5 md5 = MD5.Create();
-								byte[] hash = md5.ComputeHash(data, 0, data.Length - 16);
+								Debug.Log(len + " " + data.Length);
+								byte[] hash = md5.ComputeHash(data, HEADER_LEN, len);
 								bool flag = true;
 								for (int i = 0; i < 16; i++)
 								{
-									if (hash[i] != data[data.Length - 16 + i])
+									if (hash[i] != data[i])
 									{
 										flag = false;
 										break;
@@ -70,15 +77,17 @@ public class NfcImportHandler : MonoBehaviour
 								}
 								if (flag)
 								{
-									MemoryStream stream = new MemoryStream(data.Length - 16);
-									stream.Write(data, 0, data.Length - 16);
+									MemoryStream stream = new MemoryStream(data.Length - HEADER_LEN);
+									stream.Write(data, HEADER_LEN, len);
 									stream.Position = 0;
 									DataStorage.Instance.DeserializeData(stream);
+									Debug.Log("Import was successful!");
 									ProgressText.text += "Import successful!";
 									TagFound = true;
 								}
 								else
 								{
+									Debug.Log("Data was invalid!");
 									ProgressText.text = "Error. Please try again.";
 								}
 							}

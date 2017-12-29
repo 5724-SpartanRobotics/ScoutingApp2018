@@ -6,6 +6,7 @@ using ZXing.QrCode.Internal;
 public class OptionsHelper : MonoBehaviour
 {
 	public Image NFCCheckmark;
+	public Image DebugCheckmark;
 	public Text NFCErrorText;
 	public Dropdown QRVersionSelector;
 	public Dropdown QRErrorCorrectionLevelSelector;
@@ -38,6 +39,17 @@ public class OptionsHelper : MonoBehaviour
 		}
 	}
 
+	int _WWClickCount = 0;
+
+	public void ClickWWToggle()
+	{
+		if (++_WWClickCount >= 7)
+		{
+			Options.Inst.DebugBoolean = !Options.Inst.DebugBoolean;
+			DebugCheckmark.enabled = Options.Inst.DebugBoolean;
+		}
+	}
+
 	public void OnVersionValueChange(int newValue)
 	{
 		Options.Inst.QRVersion = (byte)(40 - newValue);
@@ -57,6 +69,12 @@ public class Options
 	/// The main options instance.
 	/// </summary>
 	public static Options Inst { get; } = new Options();
+
+	/// <summary>
+	/// It was going to be used for something and then wasn't.
+	/// I'm keeping it just in case it is every needed.
+	/// </summary>
+	public bool DebugBoolean { get; set; } = true;
 
 	/// <summary>
 	/// Whether the device supports Near Field Communication.
@@ -156,9 +174,9 @@ public class Options
 			{
 				using (FileStream fs = File.OpenRead(_OptionsLoc))
 				{
-					byte b0 = (byte)fs.ReadByte();
-					_NFCEnabled = ((b0 >> 7) & 0x1) == 1;
-					_QRVersion = (byte)(b0 & 0x7F);
+					_NFCEnabled = fs.ReadByte() == 1;
+					DebugBoolean = fs.ReadByte() == 1;
+					_QRVersion = (byte)fs.ReadByte();
 					byte errorLvl = (byte)fs.ReadByte();
 					if (errorLvl == 0)
 						_QRErrorCorrection = ErrorCorrectionLevel.L;
@@ -190,7 +208,9 @@ public class Options
 	{
 		using (FileStream fs = File.Open(_OptionsLoc, FileMode.Create))
 		{
-			fs.WriteByte((byte)(_QRVersion | (_NFCEnabled ? 0x80 : 0)));
+			fs.WriteByte(_NFCEnabled ? (byte)1 : (byte)0);
+			fs.WriteByte(DebugBoolean ? (byte)1 : (byte)0);
+			fs.WriteByte(_QRVersion);
 			if (_QRErrorCorrection == ErrorCorrectionLevel.L)
 				fs.WriteByte(0);
 			else if (_QRErrorCorrection == ErrorCorrectionLevel.M)
