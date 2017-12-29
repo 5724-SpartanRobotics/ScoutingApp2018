@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
@@ -216,6 +217,89 @@ namespace ScoutingApp.GameData
 
 			for (int i = 0; i < numMatches; i++)
 				Matches.Add(new Match(rand));
+		}
+
+		const int DEFAULT = -1;
+		private double _AutoItem1Avg = DEFAULT;
+		private double _AutoItem2Avg = DEFAULT;
+		private double _MovedInAutoAvg = DEFAULT;
+		private double _Item1Avg = DEFAULT;
+		private double _Item2Avg = DEFAULT;
+		private double _EndgameAvg = DEFAULT;
+
+		public double AutoItem1Avg
+		{
+			get
+			{
+				if (_EndgameAvg == DEFAULT && Matches.Count > 0)
+					_AutoItem1Avg = Matches.Average(match => match.AutoBallScore);
+				return _AutoItem1Avg;
+			}
+		}
+
+		public double AutoItem2Avg
+		{
+			get
+			{
+				if (_AutoItem2Avg == DEFAULT && Matches.Count > 0)
+					_AutoItem2Avg = Matches.Average(match => match.AutoGearScore ? 1 : 0);
+				return _AutoItem2Avg;
+			}
+		}
+
+		public double MovedInAutoAvg
+		{
+			get
+			{
+				if (_MovedInAutoAvg == DEFAULT && Matches.Count > 0)
+					_MovedInAutoAvg = Matches.Average(match => match.MovedInAuto ? 1 : 0);
+				return _MovedInAutoAvg;
+			}
+		}
+
+		public double Item1Avg
+		{
+			get
+			{
+				if (_Item1Avg == DEFAULT && Matches.Count > 0)
+					_Item1Avg = Matches.Average(match => match.BallScore);
+				return _Item1Avg;
+			}
+		}
+
+		public double Item2Avg
+		{
+			get
+			{
+				if (_Item2Avg == DEFAULT && Matches.Count > 0)
+					_Item2Avg = Matches.Average(match => match.GearScore);
+				return _Item2Avg;
+			}
+		}
+
+		public double EndgameAvg
+		{
+			get
+			{
+				if (_EndgameAvg == DEFAULT && Matches.Count > 0)
+					_EndgameAvg = Matches.Average(match => match.ClimbedRope ? 1 : 0);
+				return _EndgameAvg;
+			}
+		}
+
+		public bool NotBroken
+		{
+			get
+			{
+				if (Matches.Count > 0)
+					return Matches.OrderByDescending(match => match.MatchNum).First().WorksPostMatch;
+				return true;
+			}
+			set
+			{
+				if (Matches.Count > 0)
+					Matches.OrderByDescending(match => match.MatchNum).First().WorksPostMatch = value;
+			}
 		}
 
 		public Team()

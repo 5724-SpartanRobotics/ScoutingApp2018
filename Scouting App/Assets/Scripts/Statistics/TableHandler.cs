@@ -1,7 +1,5 @@
 using ScoutingApp.GameData;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class TableHandler : MonoBehaviour
@@ -33,7 +31,7 @@ public class TableHandler : MonoBehaviour
 			TeamListItem item = newTeam.GetComponent<TeamListItem>();
 			item.TeamName.text = row.Team.TeamName;
 			item.TeamNum.text = row.Team.TeamNum.ToString();
-			if (row.NotBroken)
+			if (row.Team.NotBroken)
 			{
 				item.TeamStatus.sprite = CheckSprite;
 				item.TeamStatus.color = Color.green;
@@ -77,10 +75,10 @@ public class TableHandler : MonoBehaviour
 		{
 			Rows.Sort((row1, row2) =>
 			{
-				if (row1.NotBroken == row2.NotBroken)
+				if (row1.Team.NotBroken == row2.Team.NotBroken)
 					return row1.Team.TeamName.CompareTo(row2.Team.TeamName);
 				else
-					return row1.NotBroken ? -1 : 1;
+					return row1.Team.NotBroken ? -1 : 1;
 			});
 			if (reverse)
 				Rows.Reverse();
@@ -90,70 +88,24 @@ public class TableHandler : MonoBehaviour
 		{
 			Rows.Sort((row1, row2) =>
 			{
-				if (row1.NotBroken == row2.NotBroken)
+				if (row1.Team.NotBroken == row2.Team.NotBroken)
 					return row1.Team.TeamNum.CompareTo(row2.Team.TeamNum);
 				else
-					return row1.NotBroken ? -1 : 1;
+					return row1.Team.NotBroken ? -1 : 1;
 			});
 			if (reverse)
 				Rows.Reverse();
-		}
-
-		public void DebugPrint()
-		{
-			string s = string.Empty;
-			foreach (TableRow row in Rows)
-				s += row.Columns.Aggregate((current, next) => current + "\t" + next) + "\n";
-			Debug.Log(s);
 		}
 	}
 
 	public class TableRow
 	{
 		public Team Team;
-
-		private string ToPercent(double d)
-		{
-			return (Math.Round(d * 1000) / 10) + "%";
-		}
-
-		private string ToRoundStr(double d)
-		{
-			return (Math.Round(d * 10) / 10).ToString();
-		}
-
-		public string[] Columns
-		{
-			get
-			{
-				return new string[] { Team.TeamName, Team.TeamNum.ToString(), ToRoundStr(BallAvg),
-					ToRoundStr(AutoBallAvg), ToPercent(AutoGearAvg), ToRoundStr(BallAvg),
-					ToRoundStr(GearAvg), ToRoundStr(ClimbAvg), NotBroken ? "\u2714" : "X" };
-				// I'm just using characters right now for the check / X mark because it is easy.
-				// We can change it to use images later.
-			}
-		}
-
-		public double AutoBallAvg { get; private set; }
-		public double AutoGearAvg { get; private set; }
-		public double BallAvg { get; private set; }
-		public double GearAvg { get; private set; }
-		public double ClimbAvg { get; private set; }
-		public bool NotBroken { get; private set; }
 		public bool IsVisible { get; set; } = true;
 
 		public TableRow(Team team)
 		{
 			Team = team;
-
-			AutoBallAvg = team.Matches.Average(match => match.AutoBallScore);
-			AutoGearAvg = team.Matches.Average(match => match.AutoGearScore ? 1 : 0);
-			BallAvg = team.Matches.Average(match => match.BallScore);
-			GearAvg = team.Matches.Average(match => match.GearScore);
-
-			ClimbAvg = team.Matches.Average(match => match.ClimbedRope ? 1 : 0);
-
-			NotBroken = team.Matches.OrderByDescending(match => match.MatchNum).First().WorksPostMatch;
 		}
 	}
 }

@@ -22,7 +22,7 @@ public class OptionsHelper : MonoBehaviour
 		else if (!Options.Inst.NFCSystemOn)
 			NFCErrorText.text = "NFC is not enabled. Try enabling it in settings.";
 		else
-			NFCErrorText.enabled = false;
+			Destroy(NFCErrorText.gameObject);
 
 		QRVersionSelector.value = 40 - Options.Inst.QRVersion;
 		QRErrorCorrectionLevelSelector.value = Options.Inst.QRErrorCorrection == ErrorCorrectionLevel.L ? 0 :
@@ -39,14 +39,15 @@ public class OptionsHelper : MonoBehaviour
 		}
 	}
 
-	int _WWClickCount = 0;
+	private int _DebugClickCount = 0;
 
 	public void ClickWWToggle()
 	{
-		if (++_WWClickCount >= 7)
+		if (++_DebugClickCount >= 7)
 		{
 			Options.Inst.DebugBoolean = !Options.Inst.DebugBoolean;
 			DebugCheckmark.enabled = Options.Inst.DebugBoolean;
+			_DebugClickCount = _DebugClickCount % 7;
 		}
 	}
 
@@ -177,6 +178,8 @@ public class Options
 					_NFCEnabled = fs.ReadByte() == 1;
 					DebugBoolean = fs.ReadByte() == 1;
 					_QRVersion = (byte)fs.ReadByte();
+					if (_QRVersion < 20 || _QRVersion > 40)
+						_QRVersion = 32;
 					byte errorLvl = (byte)fs.ReadByte();
 					if (errorLvl == 0)
 						_QRErrorCorrection = ErrorCorrectionLevel.L;
