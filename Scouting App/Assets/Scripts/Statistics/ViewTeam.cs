@@ -11,12 +11,12 @@ public class ViewTeam : MonoBehaviour
 
 	void Start()
 	{
-		int num = PlayerPrefs.GetInt("currentTeam");
+		int teamNum = PlayerPrefs.GetInt("currentTeam");
 
-		if (!DataStorage.Instance.Teams.Contains(num))
+		if (!DataStorage.Instance.Teams.Contains(teamNum))
 			return;
 
-		Team team = DataStorage.Instance.Teams[num];
+		Team team = DataStorage.Instance.Teams[teamNum];
 
 		if (!string.IsNullOrEmpty(team.TeamName))
 			TeamName.text = team.TeamName;
@@ -43,8 +43,6 @@ public class ViewTeam : MonoBehaviour
 		item2Avg.ValueText.text = ToRoundStr(team.Item2Avg);
 		endgameAvg.KeyText.text = "% times climbed rope: ";
 		endgameAvg.ValueText.text = ToPercent(team.EndgameAvg);
-
-		//Destroy(AvgTemplate.gameObject);
 	}
 
 	private static string ToPercent(double d)
