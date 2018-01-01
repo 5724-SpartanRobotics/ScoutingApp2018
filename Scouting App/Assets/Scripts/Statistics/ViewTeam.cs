@@ -8,6 +8,7 @@ public class ViewTeam : MonoBehaviour
 	public Text TeamName;
 	public Text TeamNumber;
 	public TextValueItem AvgTemplate;
+	public Text Comments;
 
 	void Start()
 	{
@@ -43,6 +44,9 @@ public class ViewTeam : MonoBehaviour
 		item2Avg.ValueText.text = ToRoundStr(team.Item2Avg);
 		endgameAvg.KeyText.text = "% times climbed rope: ";
 		endgameAvg.ValueText.text = ToPercent(team.EndgameAvg);
+
+		Comments.text = team.Comments;
+		team.Matches.ForEach(x => Comments.text += "\n\nMatch " + x.MatchNum + ":\n" + x.Comments);
 	}
 
 	private static string ToPercent(double d)

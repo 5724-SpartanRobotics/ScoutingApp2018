@@ -217,6 +217,7 @@ namespace ScoutingApp.GameData
 
 			for (int i = 0; i < numMatches; i++)
 				Matches.Add(new Match(rand));
+			Matches.Sort();
 		}
 
 		const int DEFAULT = -1;
@@ -332,6 +333,7 @@ namespace ScoutingApp.GameData
 				match.Deserialize(reader);
 				Matches.Add(match);
 			}
+			Matches.Sort();
 		}
 
 		public void MergeTeam(Team item)
