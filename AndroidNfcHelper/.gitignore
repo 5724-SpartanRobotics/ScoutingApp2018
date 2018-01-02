@@ -6,6 +6,7 @@ build/
 .navigation
 captures/
 output.json
+unity_classes.jar
 
 # OSX files
 .DS_Store

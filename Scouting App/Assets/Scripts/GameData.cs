@@ -29,9 +29,18 @@ namespace ScoutingApp.GameData
 
 		public void LoadData()
 		{
-			if (File.Exists(_SaveLoc))
-				using (FileStream fs = File.OpenRead(_SaveLoc))
-					DeserializeData(fs);
+			try
+			{
+				if (File.Exists(_SaveLoc))
+					using (FileStream fs = File.OpenRead(_SaveLoc))
+						DeserializeData(fs, false);
+			}
+			catch (Exception e)
+			{
+				Debug.Log("Error, save.dat missing or corrupted, replacing:");
+				Debug.LogException(e);
+				SaveData();
+			}
 		}
 
 		public void SaveData()
@@ -42,14 +51,17 @@ namespace ScoutingApp.GameData
 
 		/// <summary>
 		/// Deserializes the data in the Stream and adds it to this instance.
+		/// If closeAndSave is true, closes the stream and saves the data to the save file,
+		/// otherwise it leaves the stream open and does not save to the save file.
 		/// </summary>
-		/// <param name="stream"></param>
-		public void DeserializeData(Stream stream)
+		/// <param name="stream">The stream to deserialize the data from.</param>
+		/// <param name="closeAndSave">Whether or not to close the stream and save the data.</param>
+		public void DeserializeData(Stream stream, bool closeAndSave = true)
 		{
 			int isCompressed = stream.ReadByte();
 			if (isCompressed == 0)
 			{
-				using (BinaryReader reader = new BinaryReader(stream, Encoding.UTF8, true))
+				using (BinaryReader reader = new BinaryReader(stream, Encoding.UTF8, !closeAndSave))
 				{
 					ushort version = reader.ReadUInt16();
 					if (version != DATA_VERSION)
@@ -63,6 +75,8 @@ namespace ScoutingApp.GameData
 						Teams.Add(team);
 					}
 				}
+				if (closeAndSave)
+					SaveData();
 			}
 			else
 			{
@@ -73,8 +87,9 @@ namespace ScoutingApp.GameData
 		/// <summary>
 		/// Serializes the data in this instance to the stream.
 		/// </summary>
-		/// <returns></returns>
-		public void SerializeData(Stream stream)
+		/// <param name="stream">The stream to write the data to.</param>
+		/// <param name="close">Whether or not to close the stream after serializing to it.</param>
+		public void SerializeData(Stream stream, bool close = false)
 		{
 			MemoryStream uncompressed = new MemoryStream();
 
@@ -105,6 +120,8 @@ namespace ScoutingApp.GameData
 					stream.WriteByte(0);
 					uncompressed.CopyTo(stream);
 				}
+				if (close)
+					stream.Dispose();
 			}
 		}
 	}
@@ -262,7 +279,7 @@ namespace ScoutingApp.GameData
 		}
 	}
 
-	public class Match : BaseSerializableData
+	public class Match : BaseSerializableData, IComparable<Match>
 	{
 		public MatchPosition MatchPos { get; set; }
 		public ushort MatchNum { get; set; }
@@ -340,7 +357,8 @@ namespace ScoutingApp.GameData
 
 		public int CompareTo(Match other)
 		{
-			return MatchNum.CompareTo(other.MatchNum);
+			int comp = MatchNum.CompareTo(other.MatchNum);
+			return comp != 0 ? comp : DateTime.FromBinary(Timestamp).CompareTo(DateTime.FromBinary(other.Timestamp));
 		}
 	}
 

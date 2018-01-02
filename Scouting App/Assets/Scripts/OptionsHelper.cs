@@ -6,6 +6,7 @@ using ZXing.QrCode.Internal;
 public class OptionsHelper : MonoBehaviour
 {
 	public Image NFCCheckmark;
+	public Image DebugCheckmark;
 	public Text NFCErrorText;
 	public Dropdown QRVersionSelector;
 	public Dropdown QRErrorCorrectionLevelSelector;
@@ -14,7 +15,9 @@ public class OptionsHelper : MonoBehaviour
 	void Start()
 	{
 		NFCCheckmark.enabled = Options.Inst.IsNFCEnabled;
-		if (!Options.Inst.DeviceHasNFC)
+		if (Application.platform != RuntimePlatform.Android)
+			NFCErrorText.text = "Sorry, your platform doesn't support NFC.";
+		else if (!Options.Inst.DeviceHasNFC)
 			NFCErrorText.text = "Sorry, your device doesn't support NFC.";
 		else if (!Options.Inst.NFCSystemOn)
 			NFCErrorText.text = "NFC is not enabled. Try enabling it in settings.";
@@ -33,6 +36,17 @@ public class OptionsHelper : MonoBehaviour
 		{
 			Options.Inst.IsNFCEnabled = !Options.Inst.IsNFCEnabled;
 			NFCCheckmark.enabled = Options.Inst.IsNFCEnabled;
+		}
+	}
+
+	int _WWClickCount = 0;
+
+	public void ClickWWToggle()
+	{
+		if (++_WWClickCount >= 7)
+		{
+			Options.Inst.DebugBoolean = !Options.Inst.DebugBoolean;
+			DebugCheckmark.enabled = Options.Inst.DebugBoolean;
 		}
 	}
 
@@ -55,6 +69,12 @@ public class Options
 	/// The main options instance.
 	/// </summary>
 	public static Options Inst { get; } = new Options();
+
+	/// <summary>
+	/// It was going to be used for something and then wasn't.
+	/// I'm keeping it just in case it is every needed.
+	/// </summary>
+	public bool DebugBoolean { get; set; } = true;
 
 	/// <summary>
 	/// Whether the device supports Near Field Communication.
@@ -119,15 +139,17 @@ public class Options
 
 	private string _OptionsLoc = Path.Combine(Application.persistentDataPath, "options.dat");
 
+	public AndroidJavaObject Activity { get; private set; }
+
 	public Options()
 	{
 		if (Application.platform == RuntimePlatform.Android)
 		{
 			AndroidJavaClass activityClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
 			AndroidJavaClass contextClass = new AndroidJavaClass("android.content.Context");
-			AndroidJavaObject activity = activityClass.GetStatic<AndroidJavaObject>("currentActivity");
+			Activity = activityClass.GetStatic<AndroidJavaObject>("currentActivity");
 
-			AndroidJavaObject nfcManager = activity.Call<AndroidJavaObject>("getSystemService",
+			AndroidJavaObject nfcManager = Activity.Call<AndroidJavaObject>("getSystemService",
 				contextClass.GetStatic<string>("NFC_SERVICE"));
 
 			AndroidJavaObject adapter = nfcManager.Call<AndroidJavaObject>("getDefaultAdapter");
@@ -152,9 +174,9 @@ public class Options
 			{
 				using (FileStream fs = File.OpenRead(_OptionsLoc))
 				{
-					byte b0 = (byte)fs.ReadByte();
-					_NFCEnabled = ((b0 >> 7) & 0x1) == 1;
-					_QRVersion = (byte)(b0 & 0x7F);
+					_NFCEnabled = fs.ReadByte() == 1;
+					DebugBoolean = fs.ReadByte() == 1;
+					_QRVersion = (byte)fs.ReadByte();
 					byte errorLvl = (byte)fs.ReadByte();
 					if (errorLvl == 0)
 						_QRErrorCorrection = ErrorCorrectionLevel.L;
@@ -186,7 +208,9 @@ public class Options
 	{
 		using (FileStream fs = File.Open(_OptionsLoc, FileMode.Create))
 		{
-			fs.WriteByte((byte)(_QRVersion | (_NFCEnabled ? 0x80 : 0)));
+			fs.WriteByte(_NFCEnabled ? (byte)1 : (byte)0);
+			fs.WriteByte(DebugBoolean ? (byte)1 : (byte)0);
+			fs.WriteByte(_QRVersion);
 			if (_QRErrorCorrection == ErrorCorrectionLevel.L)
 				fs.WriteByte(0);
 			else if (_QRErrorCorrection == ErrorCorrectionLevel.M)

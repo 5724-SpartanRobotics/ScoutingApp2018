@@ -1,5 +1,7 @@
 using ScoutingApp.GameData;
+using System;
 using System.IO;
+using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,12 +9,9 @@ public class NfcExportHandler : MonoBehaviour
 {
 	public string TagID;
 	public Text ProgressText;
-	public bool TagFound = false;
 
 	private AndroidJavaObject _Activity;
-	private AndroidJavaObject _Intent;
 	private AndroidJavaObject _NfcWriter;
-	private string _Action;
 
 	// Use this for initialization
 	void Start()
@@ -26,11 +25,6 @@ public class NfcExportHandler : MonoBehaviour
 			_Activity = new AndroidJavaClass("com.unity3d.player.UnityPlayer").GetStatic<AndroidJavaObject>("currentActivity");
 			_NfcWriter = new AndroidJavaObject("us.shsrobotics.scoutingapp.androidnfchelper.NfcWriter");
 			_NfcWriter.Call("register", _Activity);
-
-			MemoryStream stream = new MemoryStream();
-			DataStorage.Instance.SerializeData(stream);
-
-			_NfcWriter.Call("setMessage", stream.ToArray());
 		}
 	}
 
@@ -45,9 +39,24 @@ public class NfcExportHandler : MonoBehaviour
 			}
 			else
 			{
+				const int HASH_LEN = 16;
+				const int LEN_LEN = 4;
+				const int HEADER_LEN = HASH_LEN + LEN_LEN;
+
 				MemoryStream stream = new MemoryStream();
+				stream.Write(new byte[HEADER_LEN], 0, HEADER_LEN);
 				DataStorage.Instance.SerializeData(stream);
 
+				// Compute hash to verify data after NDEF transfer
+				stream.Position = HEADER_LEN;
+				MD5 md5 = MD5.Create();
+				byte[] hash = md5.ComputeHash(stream);
+
+				stream.Position = 0;
+				stream.Write(hash, 0, HASH_LEN);
+				stream.Write(BitConverter.GetBytes((int)(stream.Length - HEADER_LEN)), 0, LEN_LEN);
+
+				Debug.Log(Convert.ToBase64String(stream.ToArray()));
 				_NfcWriter.Call("setMessage", stream.ToArray());
 			}
 		}

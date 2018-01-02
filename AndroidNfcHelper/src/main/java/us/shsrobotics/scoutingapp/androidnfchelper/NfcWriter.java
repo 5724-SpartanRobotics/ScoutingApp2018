@@ -14,15 +14,13 @@ public class NfcWriter implements NfcAdapter.OnNdefPushCompleteCallback, NfcAdap
         if (_Msg == null)
             return null;
 
-        NdefRecord[] recordsToAttach = createNdefRecord();
-        return new NdefMessage(recordsToAttach);
-    }
-
-    private NdefRecord[] createNdefRecord() {
-        NdefRecord[] records = new NdefRecord[1];
-		android.util.Log.d("Hello");
-        records[0] = NdefRecord.createMime("text/plain", new byte[] { (byte)'H', (byte)'e', (byte)'l', (byte)'l', (byte)'o' } );
-        return records;
+        return new NdefMessage(new NdefRecord[]{
+                NdefRecord.createExternal(
+                        "scoutingapp",            // domain name
+                        "nfcteamdata",                                // type name
+                        _Msg),                                    // payload
+                NdefRecord.createApplicationRecord("us.shsrobotics.scoutingapp")
+        });
     }
 
     @Override

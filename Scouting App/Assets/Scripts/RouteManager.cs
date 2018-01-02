@@ -67,12 +67,23 @@ public class RouteManager : MonoBehaviour
 
 	void Update()
 	{
+		// Escape is back button on Android, but it is also sometimes
+		// useful to have a back button on desktop in the editor.
+		if (Input.GetKey(KeyCode.Escape))
+			NavigateBack();
 #if UNITY_ANDROID
 		if (Application.platform == RuntimePlatform.Android)
 		{
-			// Escape is back button on Android
-			if (Input.GetKey(KeyCode.Escape))
-				NavigateBack();
+
+			bool openNFC = Options.Inst.Activity.Call<bool>("isNowNFCing");
+
+			if (openNFC)
+			{
+				if (Options.Inst.IsNFCEnabled)
+					LoadImport();
+				else
+					LoadOptions();
+			}
 		}
 #endif
 	}
