@@ -1,14 +1,20 @@
 using ScoutingApp.GameData;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ViewTeam : MonoBehaviour
 {
+	private Team _Team;
 	public Text TeamName;
 	public Text TeamNumber;
 	public TextValueItem AvgTemplate;
 	public Text Comments;
+
+	public Dropdown MatchPicker;
+	public Text MatchComments;
 
 	void Start()
 	{
@@ -17,11 +23,11 @@ public class ViewTeam : MonoBehaviour
 		if (!DataStorage.Instance.Teams.Contains(teamNum))
 			return;
 
-		Team team = DataStorage.Instance.Teams[teamNum];
+		_Team = DataStorage.Instance.Teams[teamNum];
 
-		if (!string.IsNullOrEmpty(team.TeamName))
-			TeamName.text = team.TeamName;
-		TeamNumber.text = "Team " + team.TeamNum.ToString();
+		if (!string.IsNullOrEmpty(_Team.TeamName))
+			TeamName.text = _Team.TeamName;
+		TeamNumber.text = "Team " + _Team.TeamNum.ToString();
 		AvgTemplate.gameObject.SetActive(true);
 		TextValueItem autoMoveAvg = Instantiate(AvgTemplate, AvgTemplate.transform.parent);
 		TextValueItem autoItem1Avg = Instantiate(AvgTemplate, AvgTemplate.transform.parent);
@@ -32,21 +38,33 @@ public class ViewTeam : MonoBehaviour
 		AvgTemplate.gameObject.SetActive(false);
 
 		autoMoveAvg.KeyText.text = "% of the time moves in auto: ";
-		autoMoveAvg.ValueText.text = ToPercent(team.MovedInAutoAvg);
+		autoMoveAvg.ValueText.text = ToPercent(_Team.MovedInAutoAvg);
 		autoItem1Avg.KeyText.text = "Average balls scored in auto: ";
-		autoItem1Avg.ValueText.text = ToRoundStr(team.AutoItem1Avg);
+		autoItem1Avg.ValueText.text = ToRoundStr(_Team.AutoItem1Avg);
 		autoItem2Avg.KeyText.text = "% times auto gear scored: ";
-		autoItem2Avg.ValueText.text = ToPercent(team.AutoItem2Avg);
+		autoItem2Avg.ValueText.text = ToPercent(_Team.AutoItem2Avg);
 
 		item1Avg.KeyText.text = "Average balls scored: ";
-		item1Avg.ValueText.text = ToRoundStr(team.Item1Avg);
+		item1Avg.ValueText.text = ToRoundStr(_Team.Item1Avg);
 		item2Avg.KeyText.text = "Average gears scored: ";
-		item2Avg.ValueText.text = ToRoundStr(team.Item2Avg);
+		item2Avg.ValueText.text = ToRoundStr(_Team.Item2Avg);
 		endgameAvg.KeyText.text = "% times climbed rope: ";
-		endgameAvg.ValueText.text = ToPercent(team.EndgameAvg);
+		endgameAvg.ValueText.text = ToPercent(_Team.EndgameAvg);
 
-		Comments.text = team.Comments;
-		team.Matches.ForEach(x => Comments.text += "\n\nMatch " + x.MatchNum + ":\n" + x.Comments);
+		Comments.text = _Team.Comments;
+
+		MatchPicker.ClearOptions();
+		List<string> options = new List<string>(_Team.Matches.Count);
+		foreach (Match m in _Team.Matches)
+			options.Add(m.MatchNum.ToString());
+		MatchPicker.AddOptions(options);
+
+		MatchSelected(0);
+	}
+
+	public void MatchSelected(int index)
+	{
+		MatchComments.text = _Team.Matches[index].Comments;
 	}
 
 	private static string ToPercent(double d)

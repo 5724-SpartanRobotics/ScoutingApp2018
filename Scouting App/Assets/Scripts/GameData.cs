@@ -196,7 +196,14 @@ namespace ScoutingApp.GameData
 	{
 		public string TeamName { get; set; }
 		public ushort TeamNum { get; set; }
-		public List<Match> Matches { get; set; }
+		private List<Match> _Matches;
+		public ImmutableList<Match> Matches
+		{
+			get
+			{
+				return new ImmutableList<Match>(_Matches);
+			}
+		}
 		public string Comments { get; set; }
 
 		// Test method that creates a random Team with random information and match data
@@ -216,8 +223,8 @@ namespace ScoutingApp.GameData
 			int numMatches = rand.Next(10) + 2;
 
 			for (int i = 0; i < numMatches; i++)
-				Matches.Add(new Match(rand));
-			Matches.Sort();
+				_Matches.Add(new Match(rand));
+			_Matches.Sort();
 		}
 
 		const int DEFAULT = -1;
@@ -232,8 +239,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_EndgameAvg == DEFAULT && Matches.Count > 0)
-					_AutoItem1Avg = Matches.Average(match => match.AutoBallScore);
+				if (_EndgameAvg == DEFAULT && _Matches.Count > 0)
+					_AutoItem1Avg = _Matches.Average(match => match.AutoBallScore);
 				return _AutoItem1Avg;
 			}
 		}
@@ -242,8 +249,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_AutoItem2Avg == DEFAULT && Matches.Count > 0)
-					_AutoItem2Avg = Matches.Average(match => match.AutoGearScore ? 1 : 0);
+				if (_AutoItem2Avg == DEFAULT && _Matches.Count > 0)
+					_AutoItem2Avg = _Matches.Average(match => match.AutoGearScore ? 1 : 0);
 				return _AutoItem2Avg;
 			}
 		}
@@ -252,8 +259,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_MovedInAutoAvg == DEFAULT && Matches.Count > 0)
-					_MovedInAutoAvg = Matches.Average(match => match.MovedInAuto ? 1 : 0);
+				if (_MovedInAutoAvg == DEFAULT && _Matches.Count > 0)
+					_MovedInAutoAvg = _Matches.Average(match => match.MovedInAuto ? 1 : 0);
 				return _MovedInAutoAvg;
 			}
 		}
@@ -262,8 +269,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_Item1Avg == DEFAULT && Matches.Count > 0)
-					_Item1Avg = Matches.Average(match => match.BallScore);
+				if (_Item1Avg == DEFAULT && _Matches.Count > 0)
+					_Item1Avg = _Matches.Average(match => match.BallScore);
 				return _Item1Avg;
 			}
 		}
@@ -272,8 +279,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_Item2Avg == DEFAULT && Matches.Count > 0)
-					_Item2Avg = Matches.Average(match => match.GearScore);
+				if (_Item2Avg == DEFAULT && _Matches.Count > 0)
+					_Item2Avg = _Matches.Average(match => match.GearScore);
 				return _Item2Avg;
 			}
 		}
@@ -282,8 +289,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_EndgameAvg == DEFAULT && Matches.Count > 0)
-					_EndgameAvg = Matches.Average(match => match.ClimbedRope ? 1 : 0);
+				if (_EndgameAvg == DEFAULT && _Matches.Count > 0)
+					_EndgameAvg = _Matches.Average(match => match.ClimbedRope ? 1 : 0);
 				return _EndgameAvg;
 			}
 		}
@@ -292,14 +299,14 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (Matches.Count > 0)
-					return Matches.OrderByDescending(match => match.MatchNum).First().WorksPostMatch;
+				if (_Matches.Count > 0)
+					return _Matches.OrderByDescending(match => match.MatchNum).First().WorksPostMatch;
 				return true;
 			}
 			set
 			{
-				if (Matches.Count > 0)
-					Matches.OrderByDescending(match => match.MatchNum).First().WorksPostMatch = value;
+				if (_Matches.Count > 0)
+					_Matches.OrderByDescending(match => match.MatchNum).First().WorksPostMatch = value;
 			}
 		}
 
@@ -307,7 +314,7 @@ namespace ScoutingApp.GameData
 		{
 			TeamName = string.Empty;
 			Comments = string.Empty;
-			Matches = new List<Match>();
+			_Matches = new List<Match>();
 		}
 
 		public override void Serialize(BinaryWriter writer)
@@ -315,8 +322,8 @@ namespace ScoutingApp.GameData
 			writer.Write(TeamNum);
 			SerializerHelper.WriteString(writer, TeamName);
 			SerializerHelper.WriteString(writer, Comments);
-			writer.Write((ushort)Matches.Count);
-			foreach (Match match in Matches)
+			writer.Write((ushort)_Matches.Count);
+			foreach (Match match in _Matches)
 				match.Serialize(writer);
 		}
 
@@ -326,14 +333,14 @@ namespace ScoutingApp.GameData
 			TeamName = SerializerHelper.ReadString(reader);
 			Comments = SerializerHelper.ReadString(reader);
 			int len = reader.ReadUInt16();
-			Matches = new List<Match>(len);
+			_Matches = new List<Match>(len);
 			for (int i = 0; i < len; i++)
 			{
 				Match match = new Match();
 				match.Deserialize(reader);
-				Matches.Add(match);
+				_Matches.Add(match);
 			}
-			Matches.Sort();
+			_Matches.Sort();
 		}
 
 		public void MergeTeam(Team item)
@@ -344,11 +351,11 @@ namespace ScoutingApp.GameData
 			if (!string.IsNullOrWhiteSpace(item.Comments))
 				Comments += "\n\n" + item.Comments;
 
-			foreach (Match match in item.Matches)
+			foreach (Match match in item._Matches)
 			{
 				bool flag = true;
-				Matches.Add(match);
-				foreach (Match thisMatch in Matches)
+				_Matches.Add(match);
+				foreach (Match thisMatch in _Matches)
 				{
 					if (match.Timestamp == thisMatch.Timestamp)
 					{
@@ -358,10 +365,10 @@ namespace ScoutingApp.GameData
 				}
 				if (flag)
 				{
-					Matches.Add(match);
+					_Matches.Add(match);
 				}
 			}
-			Matches.Sort();
+			_Matches.Sort();
 		}
 	}
 
