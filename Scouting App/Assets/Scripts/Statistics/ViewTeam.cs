@@ -1,20 +1,20 @@
 using ScoutingApp.GameData;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ViewTeam : MonoBehaviour
 {
 	private Team _Team;
+	public TextValueItem AvgStatTemplate;
 	public Text TeamName;
 	public Text TeamNumber;
-	public TextValueItem AvgTemplate;
 	public Text Comments;
 
 	public Dropdown MatchPicker;
 	public Text MatchComments;
+	public TextValueItem MatchStatTemplate;
 
 	void Start()
 	{
@@ -28,14 +28,15 @@ public class ViewTeam : MonoBehaviour
 		if (!string.IsNullOrEmpty(_Team.TeamName))
 			TeamName.text = _Team.TeamName;
 		TeamNumber.text = "Team " + _Team.TeamNum.ToString();
-		AvgTemplate.gameObject.SetActive(true);
-		TextValueItem autoMoveAvg = Instantiate(AvgTemplate, AvgTemplate.transform.parent);
-		TextValueItem autoItem1Avg = Instantiate(AvgTemplate, AvgTemplate.transform.parent);
-		TextValueItem autoItem2Avg = Instantiate(AvgTemplate, AvgTemplate.transform.parent);
-		TextValueItem item1Avg = Instantiate(AvgTemplate, AvgTemplate.transform.parent);
-		TextValueItem item2Avg = Instantiate(AvgTemplate, AvgTemplate.transform.parent);
-		TextValueItem endgameAvg = Instantiate(AvgTemplate, AvgTemplate.transform.parent);
-		AvgTemplate.gameObject.SetActive(false);
+
+		AvgStatTemplate.gameObject.SetActive(true);
+		TextValueItem autoMoveAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+		TextValueItem autoItem1Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+		TextValueItem autoItem2Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+		TextValueItem item1Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+		TextValueItem item2Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+		TextValueItem endgameAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+		AvgStatTemplate.gameObject.SetActive(false);
 
 		autoMoveAvg.KeyText.text = "% of the time moves in auto: ";
 		autoMoveAvg.ValueText.text = ToPercent(_Team.MovedInAutoAvg);
@@ -64,6 +65,35 @@ public class ViewTeam : MonoBehaviour
 
 	public void MatchSelected(int index)
 	{
+		foreach (Transform child in MatchStatTemplate.transform.parent)
+			if (child.gameObject != MatchStatTemplate.gameObject)
+				Destroy(child.gameObject);
+
+		Match match = _Team.Matches[index];
+
+		MatchStatTemplate.gameObject.SetActive(true);
+		TextValueItem autoMove = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
+		TextValueItem autoItem1 = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
+		TextValueItem autoItem2 = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
+		TextValueItem item1 = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
+		TextValueItem item2 = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
+		TextValueItem endgame = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
+		MatchStatTemplate.gameObject.SetActive(false);
+
+		autoMove.KeyText.text = "Moved in auto: ";
+		autoMove.ValueText.text = match.MovedInAuto.ToString();
+		autoItem1.KeyText.text = "Balls scored in auto: ";
+		autoItem1.ValueText.text = match.AutoBallScore.ToString();
+		autoItem2.KeyText.text = "Auto gear scored: ";
+		autoItem2.ValueText.text = match.AutoGearScore.ToString();
+
+		item1.KeyText.text = "Balls scored: ";
+		item1.ValueText.text = match.BallScore.ToString();
+		item2.KeyText.text = "Gears scored: ";
+		item2.ValueText.text = match.GearScore.ToString();
+		endgame.KeyText.text = "Climbed rope: ";
+		endgame.ValueText.text = match.ClimbedRope.ToString();
+
 		MatchComments.text = _Team.Matches[index].Comments;
 	}
 
