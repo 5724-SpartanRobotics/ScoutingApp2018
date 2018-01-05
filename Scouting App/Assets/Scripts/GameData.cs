@@ -356,6 +356,9 @@ namespace ScoutingApp.GameData
 			if (!string.IsNullOrWhiteSpace(item.Comments))
 				Comments += "\n\n" + item.Comments;
 
+			if (item._OverrideBroken > _OverrideBroken)
+				_OverrideBroken = item._OverrideBroken;
+
 			foreach (Match match in item._Matches)
 			{
 				bool flag = true;
