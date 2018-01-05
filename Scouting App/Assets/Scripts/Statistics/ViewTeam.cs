@@ -16,6 +16,12 @@ public class ViewTeam : MonoBehaviour
 	public Text MatchComments;
 	public TextValueItem MatchStatTemplate;
 
+	public GameObject ConfirmOverridePanel;
+	public GameObject OverrideButton;
+	public Image BrokenCheckmark;
+	public Sprite CheckSprite;
+	public Sprite XSprite;
+
 	void Start()
 	{
 		int teamNum = PlayerPrefs.GetInt("currentTeam");
@@ -60,7 +66,43 @@ public class ViewTeam : MonoBehaviour
 			options.Add(m.MatchNum.ToString());
 		MatchPicker.AddOptions(options);
 
+		UpdateBrokenCheck();
 		MatchSelected(0);
+	}
+
+	public void ClickOverride(bool cancel)
+	{
+		Debug.Log("Functioning status override requested for team " + _Team.TeamNum.ToString());
+		if (!ConfirmOverridePanel.activeInHierarchy)
+		{
+			OverrideButton.SetActive(false);
+			ConfirmOverridePanel.SetActive(true);
+		}
+		else
+		{
+			if (!cancel)
+			{
+				Debug.Log("Override Confirmed!");
+				_Team.OverrideBroken();
+				UpdateBrokenCheck();
+			}
+			ConfirmOverridePanel.SetActive(false);
+			OverrideButton.SetActive(true);
+		}
+	}
+
+	private void UpdateBrokenCheck()
+	{
+		if (_Team.NotBroken)
+		{
+			BrokenCheckmark.sprite = CheckSprite;
+			BrokenCheckmark.color = Color.green;
+		}
+		else
+		{
+			BrokenCheckmark.sprite = XSprite;
+			BrokenCheckmark.color = Color.red;
+		}
 	}
 
 	public void MatchSelected(int index)

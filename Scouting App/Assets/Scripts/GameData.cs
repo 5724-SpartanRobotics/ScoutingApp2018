@@ -235,6 +235,8 @@ namespace ScoutingApp.GameData
 		private double _Item2Avg = DEFAULT;
 		private double _EndgameAvg = DEFAULT;
 
+		private DateTime _OverrideBroken = DateTime.MinValue;
+
 		public double AutoItem1Avg
 		{
 			get
@@ -300,13 +302,14 @@ namespace ScoutingApp.GameData
 			get
 			{
 				if (_Matches.Count > 0)
-					return _Matches.OrderByDescending(match => match.MatchNum).First().WorksPostMatch;
-				return true;
-			}
-			set
-			{
-				if (_Matches.Count > 0)
-					_Matches.OrderByDescending(match => match.MatchNum).First().WorksPostMatch = value;
+				{
+					Match match = _Matches.Last();
+					if (match.Timestamp > _OverrideBroken)
+						return match.WorksPostMatch;
+					else
+						return !match.WorksPostMatch;
+				}
+				return false;
 			}
 		}
 
@@ -320,6 +323,7 @@ namespace ScoutingApp.GameData
 		public override void Serialize(BinaryWriter writer)
 		{
 			writer.Write(TeamNum);
+			writer.Write(_OverrideBroken.ToBinary());
 			SerializerHelper.WriteString(writer, TeamName);
 			SerializerHelper.WriteString(writer, Comments);
 			writer.Write((ushort)_Matches.Count);
@@ -330,6 +334,7 @@ namespace ScoutingApp.GameData
 		public override void Deserialize(BinaryReader reader)
 		{
 			TeamNum = reader.ReadUInt16();
+			_OverrideBroken = DateTime.FromBinary(reader.ReadInt64());
 			TeamName = SerializerHelper.ReadString(reader);
 			Comments = SerializerHelper.ReadString(reader);
 			int len = reader.ReadUInt16();
@@ -354,10 +359,9 @@ namespace ScoutingApp.GameData
 			foreach (Match match in item._Matches)
 			{
 				bool flag = true;
-				_Matches.Add(match);
 				foreach (Match thisMatch in _Matches)
 				{
-					if (match.Timestamp == thisMatch.Timestamp)
+					if (match.CompareTo(thisMatch) == 0)
 					{
 						flag = false;
 						break;
@@ -365,10 +369,26 @@ namespace ScoutingApp.GameData
 				}
 				if (flag)
 				{
-					_Matches.Add(match);
+					AddMatch(match);
 				}
 			}
+		}
+
+		public void AddMatch(Match match)
+		{
+			_Matches.Add(match);
 			_Matches.Sort();
+		}
+
+		public void OverrideBroken()
+		{
+			if (Matches.Count == 0)
+				return;
+			if (_OverrideBroken < Matches.Last().Timestamp)
+				_OverrideBroken = DateTime.Now;
+			else
+				_OverrideBroken = DateTime.MinValue;
+			DataStorage.Instance.SaveData();
 		}
 	}
 
@@ -385,7 +405,7 @@ namespace ScoutingApp.GameData
 		public bool AutoGearScore { get; set; }
 		public bool ClimbedRope { get; set; }
 		public bool WorksPostMatch { get; set; }
-		public long Timestamp { get; private set; }
+		public DateTime Timestamp { get; private set; }
 
 		// Test method that creates a random Match with random information
 		public Match(System.Random rand) : this()
@@ -406,7 +426,7 @@ namespace ScoutingApp.GameData
 			for (int i = 0; i < commentsLen; i++)
 				Comments += PRINTABLE_ASCII[rand.Next(PRINTABLE_ASCII.Length)];
 
-			Timestamp = DateTime.Now.ToBinary();
+			Timestamp = DateTime.Now;
 		}
 
 		public Match()
@@ -416,7 +436,7 @@ namespace ScoutingApp.GameData
 
 		public override void Serialize(BinaryWriter writer)
 		{
-			writer.Write(Timestamp);
+			writer.Write(Timestamp.ToBinary());
 			writer.Write(MatchNum);
 			writer.Write(AutoBallScore);
 			writer.Write(BallScore);
@@ -431,7 +451,7 @@ namespace ScoutingApp.GameData
 
 		public override void Deserialize(BinaryReader reader)
 		{
-			Timestamp = reader.ReadInt64();
+			Timestamp = DateTime.FromBinary(reader.ReadInt64());
 			MatchNum = reader.ReadUInt16();
 			AutoBallScore = reader.ReadInt32();
 			BallScore = reader.ReadInt32();
@@ -451,7 +471,7 @@ namespace ScoutingApp.GameData
 		public int CompareTo(Match other)
 		{
 			int comp = MatchNum.CompareTo(other.MatchNum);
-			return comp != 0 ? comp : DateTime.FromBinary(Timestamp).CompareTo(DateTime.FromBinary(other.Timestamp));
+			return comp != 0 ? comp : Timestamp.CompareTo(other.Timestamp);
 		}
 	}
 
