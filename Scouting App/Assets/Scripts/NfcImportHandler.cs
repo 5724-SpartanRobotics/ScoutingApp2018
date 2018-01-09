@@ -62,7 +62,11 @@ public class NfcImportHandler : MonoBehaviour
 								const int LEN_LEN = 4;
 								const int HEADER_LEN = HASH_LEN + LEN_LEN;
 
-								int len = BitConverter.ToInt32(data, HASH_LEN);
+								int len = data[HASH_LEN] << 24;
+								len |= data[HASH_LEN + 1] << 16;
+								len |= data[HASH_LEN + 2] << 8;
+								len |= data[HASH_LEN + 3];
+
 								MD5 md5 = MD5.Create();
 								Debug.Log(len + " " + data.Length);
 								byte[] hash = md5.ComputeHash(data, HEADER_LEN, len);

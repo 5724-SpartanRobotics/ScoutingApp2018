@@ -54,7 +54,14 @@ public class NfcExportHandler : MonoBehaviour
 
 				stream.Position = 0;
 				stream.Write(hash, 0, HASH_LEN);
-				stream.Write(BitConverter.GetBytes((int)(stream.Length - HEADER_LEN)), 0, LEN_LEN);
+
+				int len = (int)(stream.Length - HEADER_LEN);
+				byte[] lenBytes = new byte[LEN_LEN];
+				lenBytes[0] = (byte)((len >> 24) & 0xFF);
+				lenBytes[1] = (byte)((len >> 16) & 0xFF);
+				lenBytes[2] = (byte)((len >> 8) & 0xFF);
+				lenBytes[3] = (byte)(len & 0xFF);
+				stream.Write(lenBytes, 0, LEN_LEN);
 
 				Debug.Log(Convert.ToBase64String(stream.ToArray()));
 				_NfcWriter.Call("setMessage", stream.ToArray());
