@@ -242,7 +242,7 @@ namespace ScoutingApp.GameData
 			get
 			{
 				if (_EndgameAvg == DEFAULT && _Matches.Count > 0)
-					_AutoItem1Avg = _Matches.Average(match => match.AutoBallScore);
+					_AutoItem1Avg = _Matches.Average(match => match.AutoScoreItem1);
 				return _AutoItem1Avg;
 			}
 		}
@@ -252,7 +252,7 @@ namespace ScoutingApp.GameData
 			get
 			{
 				if (_AutoItem2Avg == DEFAULT && _Matches.Count > 0)
-					_AutoItem2Avg = _Matches.Average(match => match.AutoGearScore ? 1 : 0);
+					_AutoItem2Avg = _Matches.Average(match => match.AutoScoreItem2);
 				return _AutoItem2Avg;
 			}
 		}
@@ -272,7 +272,7 @@ namespace ScoutingApp.GameData
 			get
 			{
 				if (_Item1Avg == DEFAULT && _Matches.Count > 0)
-					_Item1Avg = _Matches.Average(match => match.BallScore);
+					_Item1Avg = _Matches.Average(match => match.ScoreItem1);
 				return _Item1Avg;
 			}
 		}
@@ -282,7 +282,7 @@ namespace ScoutingApp.GameData
 			get
 			{
 				if (_Item2Avg == DEFAULT && _Matches.Count > 0)
-					_Item2Avg = _Matches.Average(match => match.GearScore);
+					_Item2Avg = _Matches.Average(match => match.ScoreItem2);
 				return _Item2Avg;
 			}
 		}
@@ -292,7 +292,7 @@ namespace ScoutingApp.GameData
 			get
 			{
 				if (_EndgameAvg == DEFAULT && _Matches.Count > 0)
-					_EndgameAvg = _Matches.Average(match => match.ClimbedRope ? 1 : 0);
+					_EndgameAvg = _Matches.Average(match => match.Endgame ? 1 : 0);
 				return _EndgameAvg;
 			}
 		}
@@ -399,14 +399,14 @@ namespace ScoutingApp.GameData
 	{
 		public MatchPosition MatchPos { get; set; }
 		public ushort MatchNum { get; set; }
-		public int AutoBallScore { get; set; }
-		public int BallScore { get; set; }
-		public byte GearScore { get; set; }
+		public int AutoScoreItem1 { get; set; }
+		public int AutoScoreItem2 { get; set; }
+		public int ScoreItem1 { get; set; }
+		public int ScoreItem2 { get; set; }
 		public string Comments { get; set; }
 
 		public bool MovedInAuto { get; set; }
-		public bool AutoGearScore { get; set; }
-		public bool ClimbedRope { get; set; }
+		public bool Endgame { get; set; }
 		public bool WorksPostMatch { get; set; }
 		public DateTime Timestamp { get; private set; }
 
@@ -416,11 +416,11 @@ namespace ScoutingApp.GameData
 			MatchNum = (ushort)(rand.Next(72) + 1);
 			MovedInAuto = rand.NextDouble() < 0.85D;
 			WorksPostMatch = rand.NextDouble() < 0.90D;
-			AutoBallScore = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
-			AutoGearScore = rand.NextDouble() < 0.3D;
-			BallScore = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
-			GearScore = (byte)rand.Next(9);
-			ClimbedRope = rand.NextDouble() > (1 / 3D);
+			AutoScoreItem1 = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
+			AutoScoreItem2 = (int)(rand.NextDouble() * 2);
+			ScoreItem1 = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
+			ScoreItem2 = (byte)rand.Next(9);
+			Endgame = rand.NextDouble() > (1 / 3D);
 			MatchPos = (MatchPosition)rand.Next(6);
 
 			const string PRINTABLE_ASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
@@ -435,17 +435,19 @@ namespace ScoutingApp.GameData
 		public Match()
 		{
 			Comments = string.Empty;
+			Timestamp = DateTime.Now;
 		}
 
 		public override void Serialize(BinaryWriter writer)
 		{
 			writer.Write(Timestamp.ToBinary());
 			writer.Write(MatchNum);
-			writer.Write(AutoBallScore);
-			writer.Write(BallScore);
-			writer.Write(GearScore);
+			writer.Write(AutoScoreItem1);
+			writer.Write(AutoScoreItem2);
+			writer.Write(ScoreItem1);
+			writer.Write(ScoreItem2);
 
-			byte[] bools = SerializerHelper.PackBools(MovedInAuto, AutoGearScore, ClimbedRope, WorksPostMatch);
+			byte[] bools = SerializerHelper.PackBools(MovedInAuto, Endgame, WorksPostMatch);
 			writer.Write(bools[0]);
 
 			writer.Write((byte)MatchPos);
@@ -456,16 +458,16 @@ namespace ScoutingApp.GameData
 		{
 			Timestamp = DateTime.FromBinary(reader.ReadInt64());
 			MatchNum = reader.ReadUInt16();
-			AutoBallScore = reader.ReadInt32();
-			BallScore = reader.ReadInt32();
-			GearScore = reader.ReadByte();
+			AutoScoreItem1 = reader.ReadInt32();
+			AutoScoreItem2 = reader.ReadInt32();
+			ScoreItem1 = reader.ReadInt32();
+			ScoreItem2 = reader.ReadInt32();
 
 			byte[] boolBytes = new byte[] { reader.ReadByte() };
-			bool[] bools = SerializerHelper.UnpackBools(boolBytes, 4);
+			bool[] bools = SerializerHelper.UnpackBools(boolBytes, 3);
 			MovedInAuto = bools[0];
-			AutoGearScore = bools[1];
-			ClimbedRope = bools[2];
-			WorksPostMatch = bools[3];
+			Endgame = bools[1];
+			WorksPostMatch = bools[2];
 
 			MatchPos = (MatchPosition)reader.ReadByte();
 			Comments = SerializerHelper.ReadString(reader);

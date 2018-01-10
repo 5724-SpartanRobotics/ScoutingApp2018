@@ -125,16 +125,16 @@ public class ViewTeam : MonoBehaviour
 		autoMove.KeyText.text = "Moved in auto: ";
 		autoMove.ValueText.text = match.MovedInAuto.ToString();
 		autoItem1.KeyText.text = "Balls scored in auto: ";
-		autoItem1.ValueText.text = match.AutoBallScore.ToString();
+		autoItem1.ValueText.text = match.AutoScoreItem1.ToString();
 		autoItem2.KeyText.text = "Auto gear scored: ";
-		autoItem2.ValueText.text = match.AutoGearScore.ToString();
+		autoItem2.ValueText.text = match.AutoScoreItem2.ToString();
 
 		item1.KeyText.text = "Balls scored: ";
-		item1.ValueText.text = match.BallScore.ToString();
+		item1.ValueText.text = match.ScoreItem1.ToString();
 		item2.KeyText.text = "Gears scored: ";
-		item2.ValueText.text = match.GearScore.ToString();
+		item2.ValueText.text = match.ScoreItem2.ToString();
 		endgame.KeyText.text = "Climbed rope: ";
-		endgame.ValueText.text = match.ClimbedRope.ToString();
+		endgame.ValueText.text = match.Endgame.ToString();
 
 		MatchComments.text = _Team.Matches[index].Comments;
 	}
