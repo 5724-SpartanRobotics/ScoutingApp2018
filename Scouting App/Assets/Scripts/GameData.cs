@@ -197,6 +197,15 @@ namespace ScoutingApp.GameData
 		public string TeamName { get; set; }
 		public ushort TeamNum { get; set; }
 		private List<Match> _Matches;
+
+		public List<Match> AvgMatches
+		{
+			get
+			{
+				return _Matches.Where(x => !x.Excluded).ToList();
+			}
+		}
+
 		public ImmutableList<Match> Matches
 		{
 			get
@@ -204,6 +213,7 @@ namespace ScoutingApp.GameData
 				return new ImmutableList<Match>(_Matches);
 			}
 		}
+
 		public string Comments { get; set; }
 
 		// Test method that creates a random Team with random information and match data
@@ -241,8 +251,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_EndgameAvg == DEFAULT && _Matches.Count > 0)
-					_AutoItem1Avg = _Matches.Where(x => !x.Obsolete).Average(match => match.AutoScoreItem1);
+				if (_EndgameAvg == DEFAULT && AvgMatches.Count > 0)
+					_AutoItem1Avg = AvgMatches.Average(match => match.AutoScoreItem1);
 				return _AutoItem1Avg;
 			}
 		}
@@ -251,8 +261,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_AutoItem2Avg == DEFAULT && _Matches.Count > 0)
-					_AutoItem2Avg = _Matches.Where(x => !x.Obsolete).Average(match => match.AutoScoreItem2);
+				if (_AutoItem2Avg == DEFAULT && AvgMatches.Count > 0)
+					_AutoItem2Avg = AvgMatches.Average(match => match.AutoScoreItem2);
 				return _AutoItem2Avg;
 			}
 		}
@@ -261,8 +271,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_MovedInAutoAvg == DEFAULT && _Matches.Count > 0)
-					_MovedInAutoAvg = _Matches.Where(x => !x.Obsolete).Average(match => match.MovedInAuto ? 1 : 0);
+				if (_MovedInAutoAvg == DEFAULT && AvgMatches.Count > 0)
+					_MovedInAutoAvg = AvgMatches.Average(match => match.MovedInAuto ? 1 : 0);
 				return _MovedInAutoAvg;
 			}
 		}
@@ -271,8 +281,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_Item1Avg == DEFAULT && _Matches.Count > 0)
-					_Item1Avg = _Matches.Where(x => !x.Obsolete).Average(match => match.ScoreItem1);
+				if (_Item1Avg == DEFAULT && AvgMatches.Count > 0)
+					_Item1Avg = AvgMatches.Average(match => match.ScoreItem1);
 				return _Item1Avg;
 			}
 		}
@@ -281,8 +291,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_Item2Avg == DEFAULT && _Matches.Count > 0)
-					_Item2Avg = _Matches.Where(x => !x.Obsolete).Average(match => match.ScoreItem2);
+				if (_Item2Avg == DEFAULT && AvgMatches.Count > 0)
+					_Item2Avg = AvgMatches.Average(match => match.ScoreItem2);
 				return _Item2Avg;
 			}
 		}
@@ -291,8 +301,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_EndgameAvg == DEFAULT && _Matches.Count > 0)
-					_EndgameAvg = _Matches.Where(x => !x.Obsolete).Average(match => match.Endgame ? 1 : 0);
+				if (_EndgameAvg == DEFAULT && AvgMatches.Count > 0)
+					_EndgameAvg = AvgMatches.Average(match => match.Endgame ? 1 : 0);
 				return _EndgameAvg;
 			}
 		}
@@ -301,9 +311,9 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_Matches.Count > 0)
+				if (AvgMatches.Count > 0)
 				{
-					Match match = _Matches.Where(x => !x.Obsolete).Last();
+					Match match = AvgMatches.Last();
 					if (match.Timestamp > _OverrideBroken)
 						return match.WorksPostMatch;
 					else
@@ -409,8 +419,9 @@ namespace ScoutingApp.GameData
 		public bool Endgame { get; set; }
 		public bool WorksPostMatch { get; set; }
 		public DateTime Timestamp { get; private set; }
+
 		// Whether to exclude this match from averages
-		public bool Obsolete { get; set; }
+		public bool Excluded { get; set; }
 
 		// Test method that creates a random Match with random information
 		public Match(System.Random rand) : this()
@@ -424,7 +435,7 @@ namespace ScoutingApp.GameData
 			ScoreItem2 = (byte)rand.Next(9);
 			Endgame = rand.NextDouble() > (1 / 3D);
 			MatchPos = (MatchPosition)rand.Next(6);
-			Obsolete = false;
+			Excluded = false;
 
 			const string PRINTABLE_ASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
@@ -450,7 +461,7 @@ namespace ScoutingApp.GameData
 			writer.Write(ScoreItem1);
 			writer.Write(ScoreItem2);
 
-			byte[] bools = SerializerHelper.PackBools(MovedInAuto, Endgame, WorksPostMatch, Obsolete);
+			byte[] bools = SerializerHelper.PackBools(MovedInAuto, Endgame, WorksPostMatch, Excluded);
 			writer.Write(bools[0]);
 
 			writer.Write((byte)MatchPos);
@@ -471,7 +482,7 @@ namespace ScoutingApp.GameData
 			MovedInAuto = bools[0];
 			Endgame = bools[1];
 			WorksPostMatch = bools[2];
-			Obsolete = bools[3];
+			Excluded = bools[3];
 
 			MatchPos = (MatchPosition)reader.ReadByte();
 			Comments = SerializerHelper.ReadString(reader);

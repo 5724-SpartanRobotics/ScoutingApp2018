@@ -2,6 +2,7 @@ using ScoutingApp.GameData;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ViewTeam : MonoBehaviour
@@ -22,6 +23,10 @@ public class ViewTeam : MonoBehaviour
 	public Sprite CheckSprite;
 	public Sprite XSprite;
 
+	public GameObject ConfirmExcludePanel;
+	public GameObject ExcludeButton;
+	public Text ExcludeButtonText;
+
 	void Start()
 	{
 		int teamNum = PlayerPrefs.GetInt("currentTeam");
@@ -35,44 +40,52 @@ public class ViewTeam : MonoBehaviour
 			TeamName.text = _Team.TeamName;
 		TeamNumber.text = "Team " + _Team.TeamNum.ToString();
 
-		AvgStatTemplate.gameObject.SetActive(true);
-		TextValueItem autoMoveAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
-		TextValueItem autoItem1Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
-		TextValueItem autoItem2Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
-		TextValueItem item1Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
-		TextValueItem item2Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
-		TextValueItem endgameAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
-		AvgStatTemplate.gameObject.SetActive(false);
+		if (_Team.AvgMatches.Count != 0)
+		{
+			AvgStatTemplate.gameObject.SetActive(true);
+			TextValueItem autoMoveAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			TextValueItem autoItem1Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			TextValueItem autoItem2Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			TextValueItem item1Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			TextValueItem item2Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			TextValueItem endgameAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			AvgStatTemplate.gameObject.SetActive(false);
 
-		autoMoveAvg.KeyText.text = "% of the time moves in auto: ";
-		autoMoveAvg.ValueText.text = ToPercent(_Team.MovedInAutoAvg);
-		autoItem1Avg.KeyText.text = "Average balls scored in auto: ";
-		autoItem1Avg.ValueText.text = ToRoundStr(_Team.AutoItem1Avg);
-		autoItem2Avg.KeyText.text = "% times auto gear scored: ";
-		autoItem2Avg.ValueText.text = ToPercent(_Team.AutoItem2Avg);
+			autoMoveAvg.KeyText.text = "% of the time moves in auto: ";
+			autoMoveAvg.ValueText.text = ToPercent(_Team.MovedInAutoAvg);
+			autoItem1Avg.KeyText.text = "Average balls scored in auto: ";
+			autoItem1Avg.ValueText.text = ToRoundStr(_Team.AutoItem1Avg);
+			autoItem2Avg.KeyText.text = "% times auto gear scored: ";
+			autoItem2Avg.ValueText.text = ToPercent(_Team.AutoItem2Avg);
 
-		item1Avg.KeyText.text = "Average balls scored: ";
-		item1Avg.ValueText.text = ToRoundStr(_Team.Item1Avg);
-		item2Avg.KeyText.text = "Average gears scored: ";
-		item2Avg.ValueText.text = ToRoundStr(_Team.Item2Avg);
-		endgameAvg.KeyText.text = "% times climbed rope: ";
-		endgameAvg.ValueText.text = ToPercent(_Team.EndgameAvg);
+			item1Avg.KeyText.text = "Average balls scored: ";
+			item1Avg.ValueText.text = ToRoundStr(_Team.Item1Avg);
+			item2Avg.KeyText.text = "Average gears scored: ";
+			item2Avg.ValueText.text = ToRoundStr(_Team.Item2Avg);
+			endgameAvg.KeyText.text = "% times climbed rope: ";
+			endgameAvg.ValueText.text = ToPercent(_Team.EndgameAvg);
 
-		Comments.text = _Team.Comments;
+			Comments.text = _Team.Comments;
+		}
 
+		UpdateMatchPicker();
+
+		UpdateBrokenCheck();
+		MatchSelected(0);
+	}
+
+	private void UpdateMatchPicker()
+	{
 		MatchPicker.ClearOptions();
 		List<string> options = new List<string>(_Team.Matches.Count);
 		foreach (Match m in _Team.Matches)
 		{
 			string s = m.MatchNum.ToString();
-			if (m.Obsolete)
-				s += " (Obsolete)";
+			if (m.Excluded)
+				s += " (Excluded)";
 			options.Add(s);
 		}
 		MatchPicker.AddOptions(options);
-
-		UpdateBrokenCheck();
-		MatchSelected(0);
 	}
 
 	public void ClickOverride(bool cancel)
@@ -91,8 +104,41 @@ public class ViewTeam : MonoBehaviour
 				_Team.OverrideBroken();
 				UpdateBrokenCheck();
 			}
+			else
+			{
+				Debug.Log("Override cancel!");
+			}
 			ConfirmOverridePanel.SetActive(false);
 			OverrideButton.SetActive(true);
+		}
+	}
+
+	public void ExcludeCurrentMatch(bool cancel)
+	{
+		Debug.Log("Exclude/Include requested for team " + _Team.TeamNum.ToString() + " match "
+			+ _Team.Matches[MatchPicker.value].MatchNum);
+		if (!ConfirmExcludePanel.activeInHierarchy)
+		{
+			ExcludeButton.SetActive(false);
+			ConfirmExcludePanel.SetActive(true);
+		}
+		else
+		{
+			if (!cancel)
+			{
+				Debug.Log("Exclude/Include Confirmed!");
+				_Team.Matches[MatchPicker.value].Excluded = !_Team.Matches[MatchPicker.value].Excluded;
+				DataStorage.Instance.SaveData();
+
+				// Reload the scene to update the statistics
+				SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+			}
+			else
+			{
+				Debug.Log("Exclude cancel!");
+			}
+			ConfirmExcludePanel.SetActive(false);
+			ExcludeButton.SetActive(true);
 		}
 	}
 
@@ -140,6 +186,11 @@ public class ViewTeam : MonoBehaviour
 		item2.ValueText.text = match.ScoreItem2.ToString();
 		endgame.KeyText.text = "Climbed rope: ";
 		endgame.ValueText.text = match.Endgame.ToString();
+
+		if (!match.Excluded)
+			ExcludeButtonText.text = "Exclude From Stats";
+		else
+			ExcludeButtonText.text = "Include In Stats";
 
 		MatchComments.text = _Team.Matches[index].Comments;
 	}
