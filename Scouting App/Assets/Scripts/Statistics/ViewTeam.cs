@@ -63,7 +63,12 @@ public class ViewTeam : MonoBehaviour
 		MatchPicker.ClearOptions();
 		List<string> options = new List<string>(_Team.Matches.Count);
 		foreach (Match m in _Team.Matches)
-			options.Add(m.MatchNum.ToString());
+		{
+			string s = m.MatchNum.ToString();
+			if (m.Obsolete)
+				s += " (Obsolete)";
+			options.Add(s);
+		}
 		MatchPicker.AddOptions(options);
 
 		UpdateBrokenCheck();
