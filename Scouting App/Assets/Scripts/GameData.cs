@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ScoutingApp.GameData
 {
@@ -411,11 +412,14 @@ namespace ScoutingApp.GameData
 		public ushort MatchNum { get; set; }
 		public int AutoScoreItem1 { get; set; }
 		public int AutoScoreItem2 { get; set; }
+		public int AutoScoreItem3 { get; set; }
 		public int ScoreItem1 { get; set; }
 		public int ScoreItem2 { get; set; }
+		public int ScoreItem3 { get; set; }
 		public string Comments { get; set; }
 
 		public bool MovedInAuto { get; set; }
+		public bool Parked { get; set; }
 		public bool Endgame { get; set; }
 		public bool WorksPostMatch { get; set; }
 		public DateTime Timestamp { get; private set; }
@@ -431,8 +435,10 @@ namespace ScoutingApp.GameData
 			WorksPostMatch = rand.NextDouble() < 0.90D;
 			AutoScoreItem1 = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
 			AutoScoreItem2 = (int)(rand.NextDouble() * 2);
+			AutoScoreItem3 = (int)(rand.NextDouble() * 2);
 			ScoreItem1 = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
 			ScoreItem2 = (byte)rand.Next(9);
+			ScoreItem3 = (byte)rand.Next(9);
 			Endgame = rand.NextDouble() > (1 / 3D);
 			MatchPos = (MatchPosition)rand.Next(6);
 			Excluded = false;
@@ -458,10 +464,12 @@ namespace ScoutingApp.GameData
 			writer.Write(MatchNum);
 			writer.Write(AutoScoreItem1);
 			writer.Write(AutoScoreItem2);
+			writer.Write(AutoScoreItem3);
 			writer.Write(ScoreItem1);
 			writer.Write(ScoreItem2);
+			writer.Write(ScoreItem3);
 
-			byte[] bools = SerializerHelper.PackBools(MovedInAuto, Endgame, WorksPostMatch, Excluded);
+			byte[] bools = SerializerHelper.PackBools(MovedInAuto, Parked, Endgame, WorksPostMatch, Excluded);
 			writer.Write(bools[0]);
 
 			writer.Write((byte)MatchPos);
@@ -474,15 +482,18 @@ namespace ScoutingApp.GameData
 			MatchNum = reader.ReadUInt16();
 			AutoScoreItem1 = reader.ReadInt32();
 			AutoScoreItem2 = reader.ReadInt32();
+			AutoScoreItem3 = reader.ReadInt32();
 			ScoreItem1 = reader.ReadInt32();
 			ScoreItem2 = reader.ReadInt32();
+			ScoreItem3 = reader.ReadInt32();
 
 			byte[] boolBytes = new byte[] { reader.ReadByte() };
-			bool[] bools = SerializerHelper.UnpackBools(boolBytes, 4);
+			bool[] bools = SerializerHelper.UnpackBools(boolBytes, 5);
 			MovedInAuto = bools[0];
-			Endgame = bools[1];
-			WorksPostMatch = bools[2];
-			Excluded = bools[3];
+			Parked = bools[1];
+			Endgame = bools[2];
+			WorksPostMatch = bools[3];
+			Excluded = bools[4];
 
 			MatchPos = (MatchPosition)reader.ReadByte();
 			Comments = SerializerHelper.ReadString(reader);
@@ -497,11 +508,11 @@ namespace ScoutingApp.GameData
 
 	public enum MatchPosition : byte
 	{
-		BLUE1 = 0,
-		BLUE2 = 1,
-		BLUE3 = 2,
-		RED1 = 3,
-		RED2 = 4,
-		RED3 = 5
+		RED1 = 0,
+		RED2 = 1,
+		RED3 = 2,
+		BLUE1 = 3,
+		BLUE2 = 4,
+		BLUE3 = 5
 	}
 }

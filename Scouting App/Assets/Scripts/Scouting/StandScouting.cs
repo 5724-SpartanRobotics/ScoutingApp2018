@@ -3,21 +3,21 @@ using ScoutingApp.GameData;
 using System;
 using System.IO;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class StandScouting : MonoBehaviour
 {
-	// TODO: add 'Obsolete' button to remove a match from averages in view_team
 	public InputField TeamNumber;
-	public InputField TeamName;
 	public InputField MatchNumber;
 	public Dropdown Position;
 	public Toggle RobotMoved;
-	public InputField AutoScoreItem1;
-	public InputField AutoScoreItem2;
-	public InputField TeleopScoreItem1;
-	public InputField TeleopScoreItem2;
+	public IntScoreItem AutoScoreItem1;
+	public IntScoreItem AutoScoreItem2;
+	public IntScoreItem AutoScoreItem3;
+	public IntScoreItem TeleopScoreItem1;
+	public IntScoreItem TeleopScoreItem2;
+	public IntScoreItem TeleopScoreItem3;
+	public Toggle RobotParked;
 	public Toggle Endgame;
 	public Toggle WorksAtEnd;
 	// To be safe this input field has a max limit of 32767 characters because
@@ -35,6 +35,7 @@ public class StandScouting : MonoBehaviour
 
 	void Start()
 	{
+
 		_StateFile = Path.Combine(Application.temporaryCachePath, "stand_scouting_state.dat");
 		_CommentsTransform = CommentsInput.GetComponent<RectTransform>();
 		LoadState();
@@ -59,14 +60,16 @@ public class StandScouting : MonoBehaviour
 				using (BinaryReader reader = new BinaryReader(File.OpenRead(_StateFile)))
 				{
 					TeamNumber.text = SerializerHelper.ReadString(reader);
-					TeamName.text = SerializerHelper.ReadString(reader);
 					MatchNumber.text = SerializerHelper.ReadString(reader);
 					Position.value = reader.ReadInt32();
 					RobotMoved.isOn = reader.ReadBoolean();
-					AutoScoreItem1.text = SerializerHelper.ReadString(reader);
-					AutoScoreItem2.text = SerializerHelper.ReadString(reader);
-					TeleopScoreItem1.text = SerializerHelper.ReadString(reader);
-					TeleopScoreItem2.text = SerializerHelper.ReadString(reader);
+					AutoScoreItem1.Value = reader.ReadInt32();
+					AutoScoreItem2.Value = reader.ReadInt32();
+					AutoScoreItem3.Value = reader.ReadInt32();
+					TeleopScoreItem1.Value = reader.ReadInt32();
+					TeleopScoreItem2.Value = reader.ReadInt32();
+					TeleopScoreItem3.Value = reader.ReadInt32();
+					RobotParked.isOn = reader.ReadBoolean();
 					Endgame.isOn = reader.ReadBoolean();
 					WorksAtEnd.isOn = reader.ReadBoolean();
 				}
@@ -90,20 +93,29 @@ public class StandScouting : MonoBehaviour
 		{
 			try
 			{
-				using (BinaryWriter writer = new BinaryWriter(File.Open(_StateFile, FileMode.Create)))
+				string tempFile = Path.Combine(Application.temporaryCachePath, "stand_scouting_state.temp");
+
+				using (BinaryWriter writer = new BinaryWriter(File.Open(tempFile, FileMode.Create)))
 				{
 					SerializerHelper.WriteString(writer, TeamNumber.text);
-					SerializerHelper.WriteString(writer, TeamName.text);
 					SerializerHelper.WriteString(writer, MatchNumber.text);
 					writer.Write(Position.value);
 					writer.Write(RobotMoved.isOn);
-					SerializerHelper.WriteString(writer, AutoScoreItem1.text);
-					SerializerHelper.WriteString(writer, AutoScoreItem2.text);
-					SerializerHelper.WriteString(writer, TeleopScoreItem1.text);
-					SerializerHelper.WriteString(writer, TeleopScoreItem2.text);
+					writer.Write(AutoScoreItem1.Value);
+					writer.Write(AutoScoreItem2.Value);
+					writer.Write(AutoScoreItem3.Value);
+					writer.Write(TeleopScoreItem1.Value);
+					writer.Write(TeleopScoreItem2.Value);
+					writer.Write(TeleopScoreItem3.Value);
+					writer.Write(RobotParked.isOn);
 					writer.Write(Endgame.isOn);
 					writer.Write(WorksAtEnd.isOn);
 				}
+
+				if (File.Exists(_StateFile))
+					File.Delete(_StateFile);
+
+				File.Move(tempFile, _StateFile);
 			}
 			catch (Exception e)
 			{
@@ -113,24 +125,27 @@ public class StandScouting : MonoBehaviour
 		}
 	}
 
-	private void ClearState()
+	public void ClearState()
 	{
 		Debug.Log("Clearing saved stand scouting state...");
 		if (File.Exists(_StateFile))
 			File.Delete(_StateFile);
+		ResetPage();
 	}
 
 	private void ResetPage()
 	{
 		TeamNumber.text = string.Empty;
-		TeamName.text = string.Empty;
 		MatchNumber.text = string.Empty;
 		Position.value = 0;
 		RobotMoved.isOn = false;
-		AutoScoreItem1.text = string.Empty;
-		AutoScoreItem2.text = string.Empty;
-		TeleopScoreItem1.text = string.Empty;
-		TeleopScoreItem2.text = string.Empty;
+		AutoScoreItem1.Value = 0;
+		AutoScoreItem2.Value = 0;
+		AutoScoreItem3.Value = 0;
+		TeleopScoreItem1.Value = 0;
+		TeleopScoreItem2.Value = 0;
+		TeleopScoreItem3.Value = 0;
+		RobotParked.isOn = false;
 		Endgame.isOn = false;
 		WorksAtEnd.isOn = true;
 		Comments.text = string.Empty;
@@ -144,8 +159,7 @@ public class StandScouting : MonoBehaviour
 	public void Save()
 	{
 		// Don't have to check for comments because comments can technically be empty
-		if (CheckEmpty(TeamName) || CheckEmpty(TeamNumber) || CheckEmpty(MatchNumber) || CheckEmpty(AutoScoreItem1) ||
-			CheckEmpty(AutoScoreItem2) || CheckEmpty(TeleopScoreItem1) || CheckEmpty(TeleopScoreItem2))
+		if (CheckEmpty(TeamNumber) || CheckEmpty(MatchNumber))
 		{
 			StatusText.color = Color.red;
 			StatusText.text = $"Error, you must specify all fields before saving!";
@@ -155,7 +169,6 @@ public class StandScouting : MonoBehaviour
 
 		Team team = new Team
 		{
-			TeamName = TeamName.text,
 			TeamNum = ushort.Parse(TeamNumber.text)
 		};
 
@@ -164,10 +177,13 @@ public class StandScouting : MonoBehaviour
 			MatchNum = ushort.Parse(MatchNumber.text),
 			MatchPos = (MatchPosition)Position.value,
 			MovedInAuto = RobotMoved.isOn,
-			AutoScoreItem1 = int.Parse(AutoScoreItem1.text),
-			AutoScoreItem2 = int.Parse(AutoScoreItem2.text),
-			ScoreItem1 = int.Parse(TeleopScoreItem1.text),
-			ScoreItem2 = int.Parse(TeleopScoreItem2.text),
+			AutoScoreItem1 = AutoScoreItem1.Value,
+			AutoScoreItem2 = AutoScoreItem2.Value,
+			AutoScoreItem3 = AutoScoreItem3.Value,
+			ScoreItem1 = TeleopScoreItem1.Value,
+			ScoreItem2 = TeleopScoreItem2.Value,
+			ScoreItem3 = TeleopScoreItem3.Value,
+			Parked = RobotParked.isOn,
 			Endgame = Endgame.isOn,
 			WorksPostMatch = WorksAtEnd.isOn,
 			Comments = Comments.text
@@ -178,10 +194,9 @@ public class StandScouting : MonoBehaviour
 		DataStorage.Instance.SaveData();
 
 		StatusText.color = Color.green;
-		StatusText.text = $"Team '{TeamName.text}' match {MatchNumber.text} saved!";
+		StatusText.text = $"Team '{TeamNumber.text}' match {MatchNumber.text} saved!";
 		StatusText.gameObject.SetActive(true);
 
 		ClearState();
-		ResetPage();
 	}
 }

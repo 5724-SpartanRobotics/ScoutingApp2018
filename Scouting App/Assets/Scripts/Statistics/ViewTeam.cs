@@ -173,18 +173,18 @@ public class ViewTeam : MonoBehaviour
 		TextValueItem endgame = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
 		MatchStatTemplate.gameObject.SetActive(false);
 
-		autoMove.KeyText.text = "Moved in auto: ";
+		autoMove.KeyText.text = "Crossed baseline in auto: ";
 		autoMove.ValueText.text = match.MovedInAuto.ToString();
-		autoItem1.KeyText.text = "Balls scored in auto: ";
+		autoItem1.KeyText.text = "Auto scale powercubes scored: ";
 		autoItem1.ValueText.text = match.AutoScoreItem1.ToString();
-		autoItem2.KeyText.text = "Auto gear scored: ";
+		autoItem2.KeyText.text = "Auto Switch powercubes scored: ";
 		autoItem2.ValueText.text = match.AutoScoreItem2.ToString();
 
-		item1.KeyText.text = "Balls scored: ";
+		item1.KeyText.text = "Scale powercubes scored: ";
 		item1.ValueText.text = match.ScoreItem1.ToString();
-		item2.KeyText.text = "Gears scored: ";
+		item2.KeyText.text = "Switch powercubes scored: ";
 		item2.ValueText.text = match.ScoreItem2.ToString();
-		endgame.KeyText.text = "Climbed rope: ";
+		endgame.KeyText.text = "Climbed to face the boss: ";
 		endgame.ValueText.text = match.Endgame.ToString();
 
 		if (!match.Excluded)
