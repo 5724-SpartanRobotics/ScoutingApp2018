@@ -18,8 +18,10 @@ public class StandScouting : MonoBehaviour
 	public IntScoreItem TeleopScoreItem2;
 	public IntScoreItem TeleopScoreItem3;
 	public Toggle RobotParked;
-	public Toggle Endgame;
 	public Toggle WorksAtEnd;
+	public MultiChoiceScoreItem DefenseChoice;
+	public MultiChoiceScoreItem EndgameChoice;
+	public ConfirmCancelButton ClearPageButton;
 	// To be safe this input field has a max limit of 32767 characters because
 	// the SerializerHelper uses a ushort as the byte limit and can therefore
 	// only hold 65535 (ushort.MaxValue) bytes. (Leaves room for multi-byte
@@ -31,12 +33,28 @@ public class StandScouting : MonoBehaviour
 	private RectTransform _CommentsTransform;
 
 	private string _StateFile;
+	private bool _SaveOff = true;
 
 
 	void Start()
 	{
+		// These two prefab items are disabled by default and enabled
+		// here in the code because if this is not done a Unity bug
+		// causes the scene to have to be saved every time it is opened,
+		// even if nothing actually changes.
+		AutoScoreItem1.gameObject.SetActive(true);
+		AutoScoreItem2.gameObject.SetActive(true);
+		AutoScoreItem3.gameObject.SetActive(true);
+		TeleopScoreItem1.gameObject.SetActive(true);
+		TeleopScoreItem2.gameObject.SetActive(true);
+		TeleopScoreItem3.gameObject.SetActive(true);
+		DefenseChoice.gameObject.SetActive(true);
+		EndgameChoice.gameObject.SetActive(true);
+		ClearPageButton.gameObject.SetActive(true);
+
 
 		_StateFile = Path.Combine(Application.temporaryCachePath, "stand_scouting_state.dat");
+		_SaveOff = false;
 		_CommentsTransform = CommentsInput.GetComponent<RectTransform>();
 		LoadState();
 	}
@@ -47,8 +65,6 @@ public class StandScouting : MonoBehaviour
 		_CommentsTransform.sizeDelta = new Vector2(_CommentsTransform.rect.width, Comments.preferredHeight + 30);
 
 	}
-
-	private bool _SaveOff;
 
 	private void LoadState()
 	{
@@ -61,6 +77,7 @@ public class StandScouting : MonoBehaviour
 				{
 					TeamNumber.text = SerializerHelper.ReadString(reader);
 					MatchNumber.text = SerializerHelper.ReadString(reader);
+					Comments.text = SerializerHelper.ReadString(reader);
 					Position.value = reader.ReadInt32();
 					RobotMoved.isOn = reader.ReadBoolean();
 					AutoScoreItem1.Value = reader.ReadInt32();
@@ -70,7 +87,8 @@ public class StandScouting : MonoBehaviour
 					TeleopScoreItem2.Value = reader.ReadInt32();
 					TeleopScoreItem3.Value = reader.ReadInt32();
 					RobotParked.isOn = reader.ReadBoolean();
-					Endgame.isOn = reader.ReadBoolean();
+					EndgameChoice.SelectOption(reader.ReadInt32());
+					DefenseChoice.SelectOption(reader.ReadInt32());
 					WorksAtEnd.isOn = reader.ReadBoolean();
 				}
 			}
@@ -99,6 +117,7 @@ public class StandScouting : MonoBehaviour
 				{
 					SerializerHelper.WriteString(writer, TeamNumber.text);
 					SerializerHelper.WriteString(writer, MatchNumber.text);
+					SerializerHelper.WriteString(writer, Comments.text);
 					writer.Write(Position.value);
 					writer.Write(RobotMoved.isOn);
 					writer.Write(AutoScoreItem1.Value);
@@ -108,7 +127,8 @@ public class StandScouting : MonoBehaviour
 					writer.Write(TeleopScoreItem2.Value);
 					writer.Write(TeleopScoreItem3.Value);
 					writer.Write(RobotParked.isOn);
-					writer.Write(Endgame.isOn);
+					writer.Write(EndgameChoice.Value);
+					writer.Write(DefenseChoice.Value);
 					writer.Write(WorksAtEnd.isOn);
 				}
 
@@ -130,7 +150,9 @@ public class StandScouting : MonoBehaviour
 		Debug.Log("Clearing saved stand scouting state...");
 		if (File.Exists(_StateFile))
 			File.Delete(_StateFile);
+		_SaveOff = true;
 		ResetPage();
+		_SaveOff = false;
 	}
 
 	private void ResetPage()
@@ -146,7 +168,8 @@ public class StandScouting : MonoBehaviour
 		TeleopScoreItem2.Value = 0;
 		TeleopScoreItem3.Value = 0;
 		RobotParked.isOn = false;
-		Endgame.isOn = false;
+		EndgameChoice.SelectOption(0);
+		DefenseChoice.SelectOption(0);
 		WorksAtEnd.isOn = true;
 		Comments.text = string.Empty;
 	}
@@ -184,7 +207,8 @@ public class StandScouting : MonoBehaviour
 			ScoreItem2 = TeleopScoreItem2.Value,
 			ScoreItem3 = TeleopScoreItem3.Value,
 			Parked = RobotParked.isOn,
-			Endgame = Endgame.isOn,
+			EndgameAbility = (byte)EndgameChoice.Value,
+			DefenseAbility = (byte)DefenseChoice.Value,
 			WorksPostMatch = WorksAtEnd.isOn,
 			Comments = Comments.text
 		};

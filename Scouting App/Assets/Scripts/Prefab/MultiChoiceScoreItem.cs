@@ -7,7 +7,7 @@ public class MultiChoiceScoreItem : MonoBehaviour
 	public List<GameObject> Options;
 	public Color SelectedColor;
 	public Color DeselectedColor;
-	public int Value;
+	public int Value { get; private set; }
 
 	[SerializeField]
 	public IntEvent OnOptionSelected;
@@ -19,6 +19,7 @@ public class MultiChoiceScoreItem : MonoBehaviour
 
 	public void SelectOption(int option)
 	{
+		Value = option;
 		foreach (GameObject opt in Options)
 			opt.GetComponent<Image>().color = DeselectedColor;
 

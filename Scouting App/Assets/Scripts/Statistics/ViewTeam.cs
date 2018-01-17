@@ -23,8 +23,6 @@ public class ViewTeam : MonoBehaviour
 	public Sprite CheckSprite;
 	public Sprite XSprite;
 
-	public GameObject ConfirmExcludePanel;
-	public GameObject ExcludeButton;
 	public Text ExcludeButtonText;
 
 	void Start()
@@ -113,33 +111,18 @@ public class ViewTeam : MonoBehaviour
 		}
 	}
 
-	public void ExcludeCurrentMatch(bool cancel)
+	public void ExcludeCurrentMatch()
 	{
 		Debug.Log("Exclude/Include requested for team " + _Team.TeamNum.ToString() + " match "
 			+ _Team.Matches[MatchPicker.value].MatchNum);
-		if (!ConfirmExcludePanel.activeInHierarchy)
-		{
-			ExcludeButton.SetActive(false);
-			ConfirmExcludePanel.SetActive(true);
-		}
-		else
-		{
-			if (!cancel)
-			{
-				Debug.Log("Exclude/Include Confirmed!");
-				_Team.Matches[MatchPicker.value].Excluded = !_Team.Matches[MatchPicker.value].Excluded;
-				DataStorage.Instance.SaveData();
 
-				// Reload the scene to update the statistics
-				SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-			}
-			else
-			{
-				Debug.Log("Exclude cancel!");
-			}
-			ConfirmExcludePanel.SetActive(false);
-			ExcludeButton.SetActive(true);
-		}
+		_Team.Matches[MatchPicker.value].Excluded = !_Team.Matches[MatchPicker.value].Excluded;
+				Debug.Log("Exclude/Include Confirmed!");
+
+		DataStorage.Instance.SaveData();
+
+		// Reload the scene to update the statistics
+		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
 
 	private void UpdateBrokenCheck()
@@ -185,7 +168,7 @@ public class ViewTeam : MonoBehaviour
 		item2.KeyText.text = "Switch powercubes scored: ";
 		item2.ValueText.text = match.ScoreItem2.ToString();
 		endgame.KeyText.text = "Climbed to face the boss: ";
-		endgame.ValueText.text = match.Endgame.ToString();
+		endgame.ValueText.text = match.EndgameAbility.ToString();
 
 		if (!match.Excluded)
 			ExcludeButtonText.text = "Exclude From Stats";

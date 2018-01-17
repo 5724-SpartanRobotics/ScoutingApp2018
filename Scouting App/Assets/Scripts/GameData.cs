@@ -303,7 +303,7 @@ namespace ScoutingApp.GameData
 			get
 			{
 				if (_EndgameAvg == DEFAULT && AvgMatches.Count > 0)
-					_EndgameAvg = AvgMatches.Average(match => match.Endgame ? 1 : 0);
+					_EndgameAvg = AvgMatches.Average(match => match.EndgameAbility);
 				return _EndgameAvg;
 			}
 		}
@@ -420,7 +420,8 @@ namespace ScoutingApp.GameData
 
 		public bool MovedInAuto { get; set; }
 		public bool Parked { get; set; }
-		public bool Endgame { get; set; }
+		public byte EndgameAbility { get; set; }
+		public byte DefenseAbility { get; set; }
 		public bool WorksPostMatch { get; set; }
 		public DateTime Timestamp { get; private set; }
 
@@ -439,7 +440,8 @@ namespace ScoutingApp.GameData
 			ScoreItem1 = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
 			ScoreItem2 = (byte)rand.Next(9);
 			ScoreItem3 = (byte)rand.Next(9);
-			Endgame = rand.NextDouble() > (1 / 3D);
+			EndgameAbility = (byte)(rand.NextDouble() * 3);
+			DefenseAbility = (byte)(rand.NextDouble() * 3);
 			MatchPos = (MatchPosition)rand.Next(6);
 			Excluded = false;
 
@@ -468,8 +470,10 @@ namespace ScoutingApp.GameData
 			writer.Write(ScoreItem1);
 			writer.Write(ScoreItem2);
 			writer.Write(ScoreItem3);
+			writer.Write(EndgameAbility);
+			writer.Write(DefenseAbility);
 
-			byte[] bools = SerializerHelper.PackBools(MovedInAuto, Parked, Endgame, WorksPostMatch, Excluded);
+			byte[] bools = SerializerHelper.PackBools(MovedInAuto, Parked, WorksPostMatch, Excluded);
 			writer.Write(bools[0]);
 
 			writer.Write((byte)MatchPos);
@@ -486,14 +490,15 @@ namespace ScoutingApp.GameData
 			ScoreItem1 = reader.ReadInt32();
 			ScoreItem2 = reader.ReadInt32();
 			ScoreItem3 = reader.ReadInt32();
+			EndgameAbility = reader.ReadByte();
+			DefenseAbility = reader.ReadByte();
 
 			byte[] boolBytes = new byte[] { reader.ReadByte() };
-			bool[] bools = SerializerHelper.UnpackBools(boolBytes, 5);
+			bool[] bools = SerializerHelper.UnpackBools(boolBytes, 4);
 			MovedInAuto = bools[0];
 			Parked = bools[1];
-			Endgame = bools[2];
-			WorksPostMatch = bools[3];
-			Excluded = bools[4];
+			WorksPostMatch = bools[2];
+			Excluded = bools[3];
 
 			MatchPos = (MatchPosition)reader.ReadByte();
 			Comments = SerializerHelper.ReadString(reader);
