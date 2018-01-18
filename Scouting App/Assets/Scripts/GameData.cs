@@ -241,10 +241,14 @@ namespace ScoutingApp.GameData
 		const int DEFAULT = -1;
 		private double _AutoItem1Avg = DEFAULT;
 		private double _AutoItem2Avg = DEFAULT;
+		private double _AutoItem3Avg = DEFAULT;
 		private double _MovedInAutoAvg = DEFAULT;
 		private double _Item1Avg = DEFAULT;
 		private double _Item2Avg = DEFAULT;
+		private double _Item3Avg = DEFAULT;
+		private double _ParkAvg = DEFAULT;
 		private double _EndgameAvg = DEFAULT;
+		private double _DefenseAvg = DEFAULT;
 
 		private DateTime _OverrideBroken = DateTime.MinValue;
 
@@ -265,6 +269,16 @@ namespace ScoutingApp.GameData
 				if (_AutoItem2Avg == DEFAULT && AvgMatches.Count > 0)
 					_AutoItem2Avg = AvgMatches.Average(match => match.AutoScoreItem2);
 				return _AutoItem2Avg;
+			}
+		}
+
+		public double AutoItem3Avg
+		{
+			get
+			{
+				if (_AutoItem3Avg == DEFAULT && AvgMatches.Count > 0)
+					_AutoItem3Avg = AvgMatches.Average(match => match.AutoScoreItem3);
+				return _AutoItem3Avg;
 			}
 		}
 
@@ -298,6 +312,26 @@ namespace ScoutingApp.GameData
 			}
 		}
 
+		public double Item3Avg
+		{
+			get
+			{
+				if (_Item3Avg == DEFAULT && AvgMatches.Count > 0)
+					_Item3Avg = AvgMatches.Average(match => match.ScoreItem3);
+				return _Item3Avg;
+			}
+		}
+
+		public double ParkAvg
+		{
+			get
+			{
+				if (_ParkAvg == DEFAULT && AvgMatches.Count > 0)
+					_ParkAvg = AvgMatches.Average(match => match.Parked ? 1 : 0);
+				return _ParkAvg;
+			}
+		}
+
 		public double EndgameAvg
 		{
 			get
@@ -305,6 +339,16 @@ namespace ScoutingApp.GameData
 				if (_EndgameAvg == DEFAULT && AvgMatches.Count > 0)
 					_EndgameAvg = AvgMatches.Average(match => match.EndgameAbility);
 				return _EndgameAvg;
+			}
+		}
+
+		public double DefenseAvg
+		{
+			get
+			{
+				if (_DefenseAvg == DEFAULT && AvgMatches.Count > 0)
+					_DefenseAvg = AvgMatches.Average(match => match.DefenseAbility);
+				return _DefenseAvg;
 			}
 		}
 
@@ -392,6 +436,17 @@ namespace ScoutingApp.GameData
 		{
 			_Matches.Add(match);
 			_Matches.Sort();
+
+			_AutoItem1Avg = DEFAULT;
+			_AutoItem2Avg = DEFAULT;
+			_AutoItem3Avg = DEFAULT;
+			_MovedInAutoAvg = DEFAULT;
+			_Item1Avg = DEFAULT;
+			_Item2Avg = DEFAULT;
+			_Item3Avg = DEFAULT;
+			_ParkAvg = DEFAULT;
+			_EndgameAvg = DEFAULT;
+			_DefenseAvg = DEFAULT;
 		}
 
 		public void OverrideBroken()

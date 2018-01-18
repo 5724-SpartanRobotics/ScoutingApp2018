@@ -195,6 +195,10 @@ public class StandScouting : MonoBehaviour
 			TeamNum = ushort.Parse(TeamNumber.text)
 		};
 
+		// They had to have parked in order to climb
+		if (EndgameChoice.Value != 0)
+			RobotParked.isOn = true;
+
 		Match match = new Match
 		{
 			MatchNum = ushort.Parse(MatchNumber.text),
@@ -218,7 +222,7 @@ public class StandScouting : MonoBehaviour
 		DataStorage.Instance.SaveData();
 
 		StatusText.color = Color.green;
-		StatusText.text = $"Team '{TeamNumber.text}' match {MatchNumber.text} saved!";
+		StatusText.text = $"Team {TeamNumber.text} match {MatchNumber.text} saved!";
 		StatusText.gameObject.SetActive(true);
 
 		ClearState();

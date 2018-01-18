@@ -44,24 +44,36 @@ public class ViewTeam : MonoBehaviour
 			TextValueItem autoMoveAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			TextValueItem autoItem1Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			TextValueItem autoItem2Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			TextValueItem autoItem3Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			TextValueItem item1Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			TextValueItem item2Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			TextValueItem item3Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			TextValueItem defenseAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			TextValueItem parkAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			TextValueItem endgameAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			AvgStatTemplate.gameObject.SetActive(false);
 
 			autoMoveAvg.KeyText.text = "% of the time moves in auto: ";
 			autoMoveAvg.ValueText.text = ToPercent(_Team.MovedInAutoAvg);
-			autoItem1Avg.KeyText.text = "Average balls scored in auto: ";
+			autoItem1Avg.KeyText.text = "Auto scale score average: ";
 			autoItem1Avg.ValueText.text = ToRoundStr(_Team.AutoItem1Avg);
-			autoItem2Avg.KeyText.text = "% times auto gear scored: ";
-			autoItem2Avg.ValueText.text = ToPercent(_Team.AutoItem2Avg);
+			autoItem2Avg.KeyText.text = "Auto alliance switch score average: ";
+			autoItem2Avg.ValueText.text = ToRoundStr(_Team.AutoItem2Avg);
+			autoItem3Avg.KeyText.text = "Auto vault score average: ";
+			autoItem3Avg.ValueText.text = ToRoundStr(_Team.AutoItem3Avg);
 
-			item1Avg.KeyText.text = "Average balls scored: ";
+			item1Avg.KeyText.text = "Average scale cubes scored: ";
 			item1Avg.ValueText.text = ToRoundStr(_Team.Item1Avg);
-			item2Avg.KeyText.text = "Average gears scored: ";
+			item2Avg.KeyText.text = "Average alliance switch cubes scored: ";
 			item2Avg.ValueText.text = ToRoundStr(_Team.Item2Avg);
-			endgameAvg.KeyText.text = "% times climbed rope: ";
-			endgameAvg.ValueText.text = ToPercent(_Team.EndgameAvg);
+			item3Avg.KeyText.text = "Average vault cubes scored: ";
+			item3Avg.ValueText.text = ToRoundStr(_Team.Item3Avg);
+			parkAvg.KeyText.text = "Average park percentage: ";
+			parkAvg.ValueText.text = ToPercent(_Team.ParkAvg);
+			endgameAvg.KeyText.text = "Average rope climbing ability: ";
+			endgameAvg.ValueText.text = ToRoundStr(_Team.EndgameAvg);
+			defenseAvg.KeyText.text = "Average defense ability: ";
+			defenseAvg.ValueText.text = ToRoundStr(_Team.DefenseAvg);
 
 			Comments.text = _Team.Comments;
 		}
@@ -117,7 +129,7 @@ public class ViewTeam : MonoBehaviour
 			+ _Team.Matches[MatchPicker.value].MatchNum);
 
 		_Team.Matches[MatchPicker.value].Excluded = !_Team.Matches[MatchPicker.value].Excluded;
-				Debug.Log("Exclude/Include Confirmed!");
+		Debug.Log("Exclude/Include Confirmed!");
 
 		DataStorage.Instance.SaveData();
 
@@ -151,8 +163,12 @@ public class ViewTeam : MonoBehaviour
 		TextValueItem autoMove = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
 		TextValueItem autoItem1 = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
 		TextValueItem autoItem2 = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
+		TextValueItem autoItem3 = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
 		TextValueItem item1 = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
 		TextValueItem item2 = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
+		TextValueItem item3 = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
+		TextValueItem defense = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
+		TextValueItem parked = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
 		TextValueItem endgame = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
 		MatchStatTemplate.gameObject.SetActive(false);
 
@@ -162,12 +178,21 @@ public class ViewTeam : MonoBehaviour
 		autoItem1.ValueText.text = match.AutoScoreItem1.ToString();
 		autoItem2.KeyText.text = "Auto Switch powercubes scored: ";
 		autoItem2.ValueText.text = match.AutoScoreItem2.ToString();
+		autoItem3.KeyText.text = "Auto vault powercubes scored: ";
+		autoItem3.ValueText.text = match.AutoScoreItem3.ToString();
 
 		item1.KeyText.text = "Scale powercubes scored: ";
 		item1.ValueText.text = match.ScoreItem1.ToString();
 		item2.KeyText.text = "Switch powercubes scored: ";
 		item2.ValueText.text = match.ScoreItem2.ToString();
-		endgame.KeyText.text = "Climbed to face the boss: ";
+		item3.KeyText.text = "Vault powercubes scored: ";
+		item3.ValueText.text = match.ScoreItem2.ToString();
+
+		defense.KeyText.text = "Defense rating: ";
+		defense.ValueText.text = match.DefenseAbility.ToString();
+		parked.KeyText.text = "Parked robot: ";
+		parked.ValueText.text = match.Parked.ToString();
+		endgame.KeyText.text = "Climb rating: ";
 		endgame.ValueText.text = match.EndgameAbility.ToString();
 
 		if (!match.Excluded)
