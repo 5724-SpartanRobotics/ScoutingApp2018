@@ -193,7 +193,7 @@ namespace ScoutingApp.GameData
 		}
 	}
 
-	public class Team : BaseSerializableData
+	public class Team : BaseSerializableData, IComparable<Team>
 	{
 		public string TeamName { get; set; }
 		public ushort TeamNum { get; set; }
@@ -458,6 +458,41 @@ namespace ScoutingApp.GameData
 			else
 				_OverrideBroken = DateTime.MinValue;
 			DataStorage.Instance.SaveData();
+		}
+
+		/// <summary>
+		/// The score is a value that is calculated based on importance of each
+		/// score item, which allows us to compare Teams.
+		/// </summary>
+		/// <returns></returns>
+		public double GenerateScore()
+		{
+			return GetEndgameScore() * 10 +
+				GetBoxScore() +
+				(!NotBroken ? -100000000 : 0);
+		}
+
+		public double GetEndgameScore()
+		{
+			return EndgameAvg * 6 +
+				ParkAvg;
+		}
+
+		public double GetBoxScore()
+		{
+			return AutoItem2Avg * 3 +
+				AutoItem1Avg * 2 +
+				AutoItem3Avg * 2 +
+				Item1Avg * 2 +
+				Item2Avg * 1 +
+				Item3Avg * 1 +
+				DefenseAvg * 1.5 +
+				MovedInAutoAvg * 2;
+		}
+
+		public int CompareTo(Team other)
+		{
+			return GenerateScore().CompareTo(other);
 		}
 	}
 
