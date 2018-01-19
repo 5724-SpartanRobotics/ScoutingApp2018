@@ -10,6 +10,7 @@ public class OptionsHelper : MonoBehaviour
 	public Text NFCErrorText;
 	public Dropdown QRVersionSelector;
 	public Dropdown QRErrorCorrectionLevelSelector;
+	public GameObject DebugToggle;
 
 	// Use this for initialization
 	void Start()
@@ -23,6 +24,9 @@ public class OptionsHelper : MonoBehaviour
 			NFCErrorText.text = "NFC is not enabled. Try enabling it in settings.";
 		else
 			Destroy(NFCErrorText.gameObject);
+
+		// Hide it because it is not needed
+		DebugToggle.SetActive(false);
 
 		QRVersionSelector.value = 40 - Options.Inst.QRVersion;
 		QRErrorCorrectionLevelSelector.value = Options.Inst.QRErrorCorrection == ErrorCorrectionLevel.L ? 0 :

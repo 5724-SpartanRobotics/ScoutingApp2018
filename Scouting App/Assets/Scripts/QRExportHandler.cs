@@ -13,14 +13,6 @@ public class QRExportHandler : MonoBehaviour
 
 	public void Start()
 	{
-		DataStorage.Instance.Teams.Clear();
-		System.Random rng = new System.Random();
-		int numTeams = rng.Next(10) + 3;
-
-		for (int i = 0; i < numTeams; i++)
-			DataStorage.Instance.Teams.Add(new Team(rng));
-		DataStorage.Instance.SaveData();
-
 		MemoryStream memStream = new MemoryStream();
 		DataStorage.Instance.SerializeData(memStream);
 		memStream.Position = 0;

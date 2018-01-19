@@ -73,6 +73,8 @@ public class TableHandler : MonoBehaviour
 
 		public void SortByName(bool reverse = false)
 		{
+			Rows.Sort();
+			return; // TODO remove the code below after we finalize how we will sort
 			Rows.Sort((row1, row2) =>
 			{
 				if (row1.Team.NotBroken == row2.Team.NotBroken)
@@ -86,6 +88,8 @@ public class TableHandler : MonoBehaviour
 
 		public void SortByNum(bool reverse = false)
 		{
+			Rows.Sort();
+			return; // TODO remove the code below after we finalize how we will sort
 			Rows.Sort((row1, row2) =>
 			{
 				if (row1.Team.NotBroken == row2.Team.NotBroken)

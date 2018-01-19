@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ScoutingApp.GameData
 {
@@ -192,11 +193,20 @@ namespace ScoutingApp.GameData
 		}
 	}
 
-	public class Team : BaseSerializableData
+	public class Team : BaseSerializableData, IComparable<Team>
 	{
 		public string TeamName { get; set; }
 		public ushort TeamNum { get; set; }
 		private List<Match> _Matches;
+
+		public List<Match> AvgMatches
+		{
+			get
+			{
+				return _Matches.Where(x => !x.Excluded).ToList();
+			}
+		}
+
 		public ImmutableList<Match> Matches
 		{
 			get
@@ -204,6 +214,7 @@ namespace ScoutingApp.GameData
 				return new ImmutableList<Match>(_Matches);
 			}
 		}
+
 		public string Comments { get; set; }
 
 		// Test method that creates a random Team with random information and match data
@@ -230,10 +241,14 @@ namespace ScoutingApp.GameData
 		const int DEFAULT = -1;
 		private double _AutoItem1Avg = DEFAULT;
 		private double _AutoItem2Avg = DEFAULT;
+		private double _AutoItem3Avg = DEFAULT;
 		private double _MovedInAutoAvg = DEFAULT;
 		private double _Item1Avg = DEFAULT;
 		private double _Item2Avg = DEFAULT;
+		private double _Item3Avg = DEFAULT;
+		private double _ParkAvg = DEFAULT;
 		private double _EndgameAvg = DEFAULT;
+		private double _DefenseAvg = DEFAULT;
 
 		private DateTime _OverrideBroken = DateTime.MinValue;
 
@@ -241,8 +256,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_EndgameAvg == DEFAULT && _Matches.Count > 0)
-					_AutoItem1Avg = _Matches.Average(match => match.AutoBallScore);
+				if (_EndgameAvg == DEFAULT && AvgMatches.Count > 0)
+					_AutoItem1Avg = AvgMatches.Average(match => match.AutoScoreItem1);
 				return _AutoItem1Avg;
 			}
 		}
@@ -251,9 +266,19 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_AutoItem2Avg == DEFAULT && _Matches.Count > 0)
-					_AutoItem2Avg = _Matches.Average(match => match.AutoGearScore ? 1 : 0);
+				if (_AutoItem2Avg == DEFAULT && AvgMatches.Count > 0)
+					_AutoItem2Avg = AvgMatches.Average(match => match.AutoScoreItem2);
 				return _AutoItem2Avg;
+			}
+		}
+
+		public double AutoItem3Avg
+		{
+			get
+			{
+				if (_AutoItem3Avg == DEFAULT && AvgMatches.Count > 0)
+					_AutoItem3Avg = AvgMatches.Average(match => match.AutoScoreItem3);
+				return _AutoItem3Avg;
 			}
 		}
 
@@ -261,8 +286,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_MovedInAutoAvg == DEFAULT && _Matches.Count > 0)
-					_MovedInAutoAvg = _Matches.Average(match => match.MovedInAuto ? 1 : 0);
+				if (_MovedInAutoAvg == DEFAULT && AvgMatches.Count > 0)
+					_MovedInAutoAvg = AvgMatches.Average(match => match.MovedInAuto ? 1 : 0);
 				return _MovedInAutoAvg;
 			}
 		}
@@ -271,8 +296,8 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_Item1Avg == DEFAULT && _Matches.Count > 0)
-					_Item1Avg = _Matches.Average(match => match.BallScore);
+				if (_Item1Avg == DEFAULT && AvgMatches.Count > 0)
+					_Item1Avg = AvgMatches.Average(match => match.ScoreItem1);
 				return _Item1Avg;
 			}
 		}
@@ -281,9 +306,29 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_Item2Avg == DEFAULT && _Matches.Count > 0)
-					_Item2Avg = _Matches.Average(match => match.GearScore);
+				if (_Item2Avg == DEFAULT && AvgMatches.Count > 0)
+					_Item2Avg = AvgMatches.Average(match => match.ScoreItem2);
 				return _Item2Avg;
+			}
+		}
+
+		public double Item3Avg
+		{
+			get
+			{
+				if (_Item3Avg == DEFAULT && AvgMatches.Count > 0)
+					_Item3Avg = AvgMatches.Average(match => match.ScoreItem3);
+				return _Item3Avg;
+			}
+		}
+
+		public double ParkAvg
+		{
+			get
+			{
+				if (_ParkAvg == DEFAULT && AvgMatches.Count > 0)
+					_ParkAvg = AvgMatches.Average(match => match.Parked ? 1 : 0);
+				return _ParkAvg;
 			}
 		}
 
@@ -291,9 +336,19 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_EndgameAvg == DEFAULT && _Matches.Count > 0)
-					_EndgameAvg = _Matches.Average(match => match.ClimbedRope ? 1 : 0);
+				if (_EndgameAvg == DEFAULT && AvgMatches.Count > 0)
+					_EndgameAvg = AvgMatches.Average(match => match.EndgameAbility);
 				return _EndgameAvg;
+			}
+		}
+
+		public double DefenseAvg
+		{
+			get
+			{
+				if (_DefenseAvg == DEFAULT && AvgMatches.Count > 0)
+					_DefenseAvg = AvgMatches.Average(match => match.DefenseAbility);
+				return _DefenseAvg;
 			}
 		}
 
@@ -301,9 +356,9 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_Matches.Count > 0)
+				if (AvgMatches.Count > 0)
 				{
-					Match match = _Matches.Last();
+					Match match = AvgMatches.Last();
 					if (match.Timestamp > _OverrideBroken)
 						return match.WorksPostMatch;
 					else
@@ -381,6 +436,17 @@ namespace ScoutingApp.GameData
 		{
 			_Matches.Add(match);
 			_Matches.Sort();
+
+			_AutoItem1Avg = DEFAULT;
+			_AutoItem2Avg = DEFAULT;
+			_AutoItem3Avg = DEFAULT;
+			_MovedInAutoAvg = DEFAULT;
+			_Item1Avg = DEFAULT;
+			_Item2Avg = DEFAULT;
+			_Item3Avg = DEFAULT;
+			_ParkAvg = DEFAULT;
+			_EndgameAvg = DEFAULT;
+			_DefenseAvg = DEFAULT;
 		}
 
 		public void OverrideBroken()
@@ -393,22 +459,64 @@ namespace ScoutingApp.GameData
 				_OverrideBroken = DateTime.MinValue;
 			DataStorage.Instance.SaveData();
 		}
+
+		/// <summary>
+		/// The score is a value that is calculated based on importance of each
+		/// score item, which allows us to compare Teams.
+		/// </summary>
+		/// <returns></returns>
+		public double GenerateScore()
+		{
+			return GetEndgameScore() * 10 +
+				GetBoxScore() +
+				(!NotBroken ? -100000000 : 0);
+		}
+
+		public double GetEndgameScore()
+		{
+			return EndgameAvg * 6 +
+				ParkAvg;
+		}
+
+		public double GetBoxScore()
+		{
+			return AutoItem2Avg * 3 +
+				AutoItem1Avg * 2 +
+				AutoItem3Avg * 2 +
+				Item1Avg * 2 +
+				Item2Avg * 1 +
+				Item3Avg * 1 +
+				DefenseAvg * 1.5 +
+				MovedInAutoAvg * 2;
+		}
+
+		public int CompareTo(Team other)
+		{
+			return GenerateScore().CompareTo(other);
+		}
 	}
 
 	public class Match : BaseSerializableData, IComparable<Match>
 	{
 		public MatchPosition MatchPos { get; set; }
 		public ushort MatchNum { get; set; }
-		public int AutoBallScore { get; set; }
-		public int BallScore { get; set; }
-		public byte GearScore { get; set; }
+		public int AutoScoreItem1 { get; set; }
+		public int AutoScoreItem2 { get; set; }
+		public int AutoScoreItem3 { get; set; }
+		public int ScoreItem1 { get; set; }
+		public int ScoreItem2 { get; set; }
+		public int ScoreItem3 { get; set; }
 		public string Comments { get; set; }
 
 		public bool MovedInAuto { get; set; }
-		public bool AutoGearScore { get; set; }
-		public bool ClimbedRope { get; set; }
+		public bool Parked { get; set; }
+		public byte EndgameAbility { get; set; }
+		public byte DefenseAbility { get; set; }
 		public bool WorksPostMatch { get; set; }
 		public DateTime Timestamp { get; private set; }
+
+		// Whether to exclude this match from averages
+		public bool Excluded { get; set; }
 
 		// Test method that creates a random Match with random information
 		public Match(System.Random rand) : this()
@@ -416,12 +524,16 @@ namespace ScoutingApp.GameData
 			MatchNum = (ushort)(rand.Next(72) + 1);
 			MovedInAuto = rand.NextDouble() < 0.85D;
 			WorksPostMatch = rand.NextDouble() < 0.90D;
-			AutoBallScore = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
-			AutoGearScore = rand.NextDouble() < 0.3D;
-			BallScore = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
-			GearScore = (byte)rand.Next(9);
-			ClimbedRope = rand.NextDouble() > (1 / 3D);
+			AutoScoreItem1 = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
+			AutoScoreItem2 = (int)(rand.NextDouble() * 2);
+			AutoScoreItem3 = (int)(rand.NextDouble() * 2);
+			ScoreItem1 = rand.NextDouble() < 0.25D ? rand.Next(30) : 0;
+			ScoreItem2 = (byte)rand.Next(9);
+			ScoreItem3 = (byte)rand.Next(9);
+			EndgameAbility = (byte)(rand.NextDouble() * 3);
+			DefenseAbility = (byte)(rand.NextDouble() * 3);
 			MatchPos = (MatchPosition)rand.Next(6);
+			Excluded = false;
 
 			const string PRINTABLE_ASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 
@@ -435,17 +547,23 @@ namespace ScoutingApp.GameData
 		public Match()
 		{
 			Comments = string.Empty;
+			Timestamp = DateTime.Now;
 		}
 
 		public override void Serialize(BinaryWriter writer)
 		{
 			writer.Write(Timestamp.ToBinary());
 			writer.Write(MatchNum);
-			writer.Write(AutoBallScore);
-			writer.Write(BallScore);
-			writer.Write(GearScore);
+			writer.Write(AutoScoreItem1);
+			writer.Write(AutoScoreItem2);
+			writer.Write(AutoScoreItem3);
+			writer.Write(ScoreItem1);
+			writer.Write(ScoreItem2);
+			writer.Write(ScoreItem3);
+			writer.Write(EndgameAbility);
+			writer.Write(DefenseAbility);
 
-			byte[] bools = SerializerHelper.PackBools(MovedInAuto, AutoGearScore, ClimbedRope, WorksPostMatch);
+			byte[] bools = SerializerHelper.PackBools(MovedInAuto, Parked, WorksPostMatch, Excluded);
 			writer.Write(bools[0]);
 
 			writer.Write((byte)MatchPos);
@@ -456,16 +574,21 @@ namespace ScoutingApp.GameData
 		{
 			Timestamp = DateTime.FromBinary(reader.ReadInt64());
 			MatchNum = reader.ReadUInt16();
-			AutoBallScore = reader.ReadInt32();
-			BallScore = reader.ReadInt32();
-			GearScore = reader.ReadByte();
+			AutoScoreItem1 = reader.ReadInt32();
+			AutoScoreItem2 = reader.ReadInt32();
+			AutoScoreItem3 = reader.ReadInt32();
+			ScoreItem1 = reader.ReadInt32();
+			ScoreItem2 = reader.ReadInt32();
+			ScoreItem3 = reader.ReadInt32();
+			EndgameAbility = reader.ReadByte();
+			DefenseAbility = reader.ReadByte();
 
 			byte[] boolBytes = new byte[] { reader.ReadByte() };
 			bool[] bools = SerializerHelper.UnpackBools(boolBytes, 4);
 			MovedInAuto = bools[0];
-			AutoGearScore = bools[1];
-			ClimbedRope = bools[2];
-			WorksPostMatch = bools[3];
+			Parked = bools[1];
+			WorksPostMatch = bools[2];
+			Excluded = bools[3];
 
 			MatchPos = (MatchPosition)reader.ReadByte();
 			Comments = SerializerHelper.ReadString(reader);
@@ -480,11 +603,11 @@ namespace ScoutingApp.GameData
 
 	public enum MatchPosition : byte
 	{
-		BLUE1 = 0,
-		BLUE2 = 1,
-		BLUE3 = 2,
-		RED1 = 3,
-		RED2 = 4,
-		RED3 = 5
+		RED1 = 0,
+		RED2 = 1,
+		RED3 = 2,
+		BLUE1 = 3,
+		BLUE2 = 4,
+		BLUE3 = 5
 	}
 }
