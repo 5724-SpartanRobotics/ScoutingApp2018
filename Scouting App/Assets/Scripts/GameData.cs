@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace ScoutingApp.GameData
 {
@@ -465,20 +464,21 @@ namespace ScoutingApp.GameData
 		/// score item, which allows us to compare Teams.
 		/// </summary>
 		/// <returns></returns>
-		public double GenerateScore()
+		public double GenerateRating(bool accountBroken = true)
 		{
-			return GetEndgameScore() * 10 +
-				GetBoxScore() +
-				(!NotBroken ? -100000000 : 0);
+			return GetEndgameRating(false) * 10 +
+				GetBoxRating(false) +
+				(accountBroken && !NotBroken ? -1000000000 : 0);
 		}
 
-		public double GetEndgameScore()
+		public double GetEndgameRating(bool accountBroken = true)
 		{
 			return EndgameAvg * 6 +
-				ParkAvg;
+				ParkAvg +
+				(accountBroken && !NotBroken ? -1000000000 : 0);
 		}
 
-		public double GetBoxScore()
+		public double GetBoxRating(bool accountBroken = true)
 		{
 			return AutoItem2Avg * 3 +
 				AutoItem1Avg * 2 +
@@ -487,12 +487,13 @@ namespace ScoutingApp.GameData
 				Item2Avg * 1 +
 				Item3Avg * 1 +
 				DefenseAvg * 1.5 +
-				MovedInAutoAvg * 2;
+				MovedInAutoAvg * 2 +
+				(accountBroken && !NotBroken ? -1000000000 : 0);
 		}
 
 		public int CompareTo(Team other)
 		{
-			return GenerateScore().CompareTo(other);
+			return GenerateRating().CompareTo(other.GenerateRating());
 		}
 	}
 

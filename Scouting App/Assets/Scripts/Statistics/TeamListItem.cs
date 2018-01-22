@@ -4,8 +4,10 @@ using UnityEngine.UI;
 
 public class TeamListItem : MonoBehaviour
 {
-	public Text TeamName;
 	public Text TeamNum;
+	public Text OverallRating;
+	public Text ClimbRating;
+	public Text BoxRating;
 	public Image TeamStatus;
 
 	public void ViewTeam()

@@ -14,6 +14,15 @@ public class MultiChoiceScoreItem : MonoBehaviour
 
 	private void Start()
 	{
+		for (int i = 0; i < Options.Count; i++)
+		{
+			Options[i].AddComponent<MultiChoiceOption>();
+			MultiChoiceOption optionComp = Options[i].GetComponent<MultiChoiceOption>();
+			optionComp.OptionId = i;
+			optionComp.ParentMultiChoice = this;
+			optionComp.GetComponent<Button>().onClick.AddListener(optionComp.ProcessClick);
+		}
+
 		SelectOption(Value);
 	}
 

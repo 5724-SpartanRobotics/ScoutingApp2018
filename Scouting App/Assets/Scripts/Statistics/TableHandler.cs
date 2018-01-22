@@ -1,4 +1,5 @@
 using ScoutingApp.GameData;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -28,9 +29,13 @@ public class TableHandler : MonoBehaviour
 				continue;
 
 			GameObject newTeam = Instantiate(TeamItemPrefab) as GameObject;
+
 			TeamListItem item = newTeam.GetComponent<TeamListItem>();
-			item.TeamName.text = row.Team.TeamName;
 			item.TeamNum.text = row.Team.TeamNum.ToString();
+			item.OverallRating.text = ToRoundStr(row.Team.GenerateRating(false));
+			item.ClimbRating.text = ToRoundStr(row.Team.GetEndgameRating(false));
+			item.BoxRating.text = ToRoundStr(row.Team.GetBoxRating(false));
+
 			if (row.Team.NotBroken)
 			{
 				item.TeamStatus.sprite = CheckSprite;
@@ -47,16 +52,33 @@ public class TableHandler : MonoBehaviour
 		}
 	}
 
-	public void SortByName()
+	public void SortByScore()
 	{
-		TableObj.SortByName();
+		TableObj.SortByScore();
+		RedrawList();
+	}
+
+	public void SortByClimb()
+	{
+		TableObj.SortByClimb();
+		RedrawList();
+	}
+
+	public void SortByBoxes()
+	{
+		TableObj.SortByBoxes();
 		RedrawList();
 	}
 
 	public void SortByNumber()
 	{
-		TableObj.SortByNum();
+		TableObj.SortByNumber();
 		RedrawList();
+	}
+
+	private static string ToRoundStr(double d)
+	{
+		return (Math.Round(d * 10) / 10).ToString();
 	}
 
 	public class Table
@@ -71,25 +93,23 @@ public class TableHandler : MonoBehaviour
 				Rows.Add(new TableRow(team));
 		}
 
-		public void SortByName(bool reverse = false)
+		public void SortByScore()
 		{
-			Rows.Sort();
-			return; // TODO remove the code below after we finalize how we will sort
-			Rows.Sort((row1, row2) =>
-			{
-				if (row1.Team.NotBroken == row2.Team.NotBroken)
-					return row1.Team.TeamName.CompareTo(row2.Team.TeamName);
-				else
-					return row1.Team.NotBroken ? -1 : 1;
-			});
-			if (reverse)
-				Rows.Reverse();
+			Rows.Sort((row2, row1) => row1.Team.CompareTo(row2.Team));
 		}
 
-		public void SortByNum(bool reverse = false)
+		public void SortByClimb()
 		{
-			Rows.Sort();
-			return; // TODO remove the code below after we finalize how we will sort
+			Rows.Sort((row2, row1) => row1.Team.GetEndgameRating().CompareTo(row2.Team.GetEndgameRating()));
+		}
+
+		public void SortByBoxes()
+		{
+			Rows.Sort((row2, row1) => row1.Team.GetBoxRating().CompareTo(row2.Team.GetBoxRating()));
+		}
+
+		public void SortByNumber()
+		{
 			Rows.Sort((row1, row2) =>
 			{
 				if (row1.Team.NotBroken == row2.Team.NotBroken)
@@ -97,8 +117,6 @@ public class TableHandler : MonoBehaviour
 				else
 					return row1.Team.NotBroken ? -1 : 1;
 			});
-			if (reverse)
-				Rows.Reverse();
 		}
 	}
 

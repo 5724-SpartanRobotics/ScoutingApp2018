@@ -7,6 +7,8 @@ using UnityEngine.UI;
 
 public class ViewTeam : MonoBehaviour
 {
+	public RouteManager RouteManager;
+
 	private Team _Team;
 	public TextValueItem AvgStatTemplate;
 	public Text TeamName;
@@ -53,7 +55,7 @@ public class ViewTeam : MonoBehaviour
 			TextValueItem endgameAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			AvgStatTemplate.gameObject.SetActive(false);
 
-			autoMoveAvg.KeyText.text = "% of the time moves in auto: ";
+			autoMoveAvg.KeyText.text = "% time crosses baseline in auto: ";
 			autoMoveAvg.ValueText.text = ToPercent(_Team.MovedInAutoAvg);
 			autoItem1Avg.KeyText.text = "Auto scale score average: ";
 			autoItem1Avg.ValueText.text = ToRoundStr(_Team.AutoItem1Avg);
@@ -201,6 +203,13 @@ public class ViewTeam : MonoBehaviour
 			ExcludeButtonText.text = "Include In Stats";
 
 		MatchComments.text = _Team.Matches[index].Comments;
+	}
+
+	public void DeleteTeam()
+	{
+		DataStorage.Instance.Teams.Remove(_Team);
+		DataStorage.Instance.SaveData();
+		RouteManager.NavigateBack();
 	}
 
 	private static string ToPercent(double d)
