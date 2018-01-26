@@ -466,28 +466,26 @@ namespace ScoutingApp.GameData
 		/// <returns></returns>
 		public double GenerateRating(bool accountBroken = true)
 		{
-			return GetEndgameRating(false) * 10 +
+			return GetEndgameRating(false) +
 				GetBoxRating(false) +
 				(accountBroken && !NotBroken ? -1000000000 : 0);
 		}
 
 		public double GetEndgameRating(bool accountBroken = true)
 		{
-			return EndgameAvg * 6 +
-				ParkAvg +
+			return EndgameAvg * 30 +
+				ParkAvg * 5 +
 				(accountBroken && !NotBroken ? -1000000000 : 0);
 		}
 
 		public double GetBoxRating(bool accountBroken = true)
 		{
-			return AutoItem2Avg * 3 +
-				AutoItem1Avg * 2 +
-				AutoItem3Avg * 2 +
-				Item1Avg * 2 +
-				Item2Avg * 1 +
-				Item3Avg * 1 +
-				DefenseAvg * 1.5 +
-				MovedInAutoAvg * 2 +
+			return AutoItem1Avg * 5 +
+				AutoItem2Avg * 4 +
+				AutoItem3Avg * 3 +
+				Item1Avg * 3 + // Scale
+				Item2Avg * 1 + // Alliance switch
+				Item3Avg * 2 +
 				(accountBroken && !NotBroken ? -1000000000 : 0);
 		}
 
