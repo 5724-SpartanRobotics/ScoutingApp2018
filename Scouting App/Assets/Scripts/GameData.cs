@@ -57,7 +57,7 @@ namespace ScoutingApp.GameData
 		/// </summary>
 		/// <param name="stream">The stream to deserialize the data from.</param>
 		/// <param name="closeAndSave">Whether or not to close the stream and save the data.</param>
-		public void DeserializeData(Stream stream, bool closeAndSave = true)
+		public void DeserializeData(Stream stream, bool closeAndSave = true, bool value1 = false)
 		{
 			int isCompressed = stream.ReadByte();
 			if (isCompressed == 0)
@@ -72,7 +72,7 @@ namespace ScoutingApp.GameData
 					for (int i = 0; i < count; i++)
 					{
 						Team team = new Team();
-						team.Deserialize(reader);
+						team.Deserialize(reader, value1);
 						Teams.Add(team);
 					}
 				}
@@ -196,6 +196,9 @@ namespace ScoutingApp.GameData
 	{
 		public string TeamName { get; set; }
 		public ushort TeamNum { get; set; }
+
+		public bool IsFinalist { get; set; }
+
 		private List<Match> _Matches;
 
 		public List<Match> AvgMatches
@@ -378,6 +381,9 @@ namespace ScoutingApp.GameData
 		{
 			writer.Write(TeamNum);
 			writer.Write(_OverrideBroken.ToBinary());
+
+			writer.Write(IsFinalist);
+
 			SerializerHelper.WriteString(writer, TeamName);
 			SerializerHelper.WriteString(writer, Comments);
 			writer.Write((ushort)_Matches.Count);
@@ -385,10 +391,15 @@ namespace ScoutingApp.GameData
 				match.Serialize(writer);
 		}
 
-		public override void Deserialize(BinaryReader reader)
+		public override void Deserialize(BinaryReader reader, bool value1 = false)
 		{
 			TeamNum = reader.ReadUInt16();
 			_OverrideBroken = DateTime.FromBinary(reader.ReadInt64());
+
+			IsFinalist = reader.ReadBoolean();
+			if (value1)
+				IsFinalist = false;
+
 			TeamName = SerializerHelper.ReadString(reader);
 			Comments = SerializerHelper.ReadString(reader);
 			int len = reader.ReadUInt16();
@@ -569,7 +580,7 @@ namespace ScoutingApp.GameData
 			SerializerHelper.WriteString(writer, Comments);
 		}
 
-		public override void Deserialize(BinaryReader reader)
+		public override void Deserialize(BinaryReader reader, bool value1 = false)
 		{
 			Timestamp = DateTime.FromBinary(reader.ReadInt64());
 			MatchNum = reader.ReadUInt16();

@@ -25,6 +25,8 @@ public class ViewTeam : MonoBehaviour
 	public Sprite CheckSprite;
 	public Sprite XSprite;
 
+	public Text FinalistText;
+
 	public Text ExcludeButtonText;
 
 	void Start()
@@ -78,6 +80,16 @@ public class ViewTeam : MonoBehaviour
 			defenseAvg.ValueText.text = ToRoundStr(_Team.DefenseAvg);
 
 			Comments.text = _Team.Comments;
+		}
+
+		
+		if (_Team.IsFinalist)
+		{
+			FinalistText.text = "Unselect As Finalist";
+		}
+		else
+		{
+			FinalistText.text = "Select As Finalist";
 		}
 
 		UpdateMatchPicker();
@@ -137,6 +149,20 @@ public class ViewTeam : MonoBehaviour
 
 		// Reload the scene to update the statistics
 		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+	}
+
+	public void SelectTeamAsFinalist()
+	{
+		_Team.IsFinalist = !_Team.IsFinalist;
+
+		if (_Team.IsFinalist)
+		{
+			FinalistText.text = "Unselect As Finalist";
+		}
+		else
+		{
+			FinalistText.text = "Select As Finalist";
+		}
 	}
 
 	private void UpdateBrokenCheck()

@@ -6,6 +6,7 @@ public class RouteManager : MonoBehaviour
 {
 	public const string MAIN_SCENE = "main",
 		STAND_SCOUTING_SCENE = "stand_scouting",
+		FINAL_PICKS_SCENE = "final_picks",
 		STATS_SCENE = "stats",
 		QR_EXPORT_SCENE = "qr_export",
 		QR_IMPORT_SCENE = "qr_import",
@@ -56,6 +57,7 @@ public class RouteManager : MonoBehaviour
 		{ STATS_SCENE, MAIN_SCENE },
 		{ OPTIONS_SCENE, MAIN_SCENE },
 		{ STAND_SCOUTING_SCENE, MAIN_SCENE },
+		{ FINAL_PICKS_SCENE, MAIN_SCENE },
 		{ QR_EXPORT_SCENE, STATS_SCENE },
 		{ QR_IMPORT_SCENE, STATS_SCENE },
 		{ NFC_EXPORT_SCENE, STATS_SCENE },
