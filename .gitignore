@@ -37,4 +37,10 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+
+# Ignore .DS_Store on Mac
 .DS_Store
+
+# Ignore Thumbs.db on windows
+Thumbs.db
+Thumbs.db.meta
