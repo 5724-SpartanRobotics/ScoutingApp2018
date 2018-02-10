@@ -84,7 +84,7 @@ public class NfcImportHandler : MonoBehaviour
 									MemoryStream stream = new MemoryStream(data.Length - HEADER_LEN);
 									stream.Write(data, HEADER_LEN, len);
 									stream.Position = 0;
-									DataStorage.Instance.DeserializeData(stream);
+									DataStorage.Instance.DeserializeData(stream, value1: true);
 									Debug.Log("Import was successful!");
 									ProgressText.text += "Import successful!";
 									TagFound = true;

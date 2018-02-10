@@ -157,7 +157,7 @@ public class QRImportHandler : MonoBehaviour
 					_DataStream.Position = 0;
 					try
 					{
-						DataStorage.Instance.DeserializeData(_DataStream);
+						DataStorage.Instance.DeserializeData(_DataStream, value1: true);
 					}
 					catch (Exception e)
 					{

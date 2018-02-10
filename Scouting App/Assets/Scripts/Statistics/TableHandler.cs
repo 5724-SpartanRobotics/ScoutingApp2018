@@ -10,11 +10,18 @@ public class TableHandler : MonoBehaviour
 	public GameObject ContentPanel;
 	public Sprite XSprite;
 	public Sprite CheckSprite;
+	private bool _OnlyFinalists = false;
 
 	// Use this for initialization
 	void Start()
 	{
 		TableObj = new Table();
+		RedrawList();
+	}
+
+	public void ToggleShowOnlyFinalists()
+	{
+		_OnlyFinalists = !_OnlyFinalists;
 		RedrawList();
 	}
 
@@ -25,9 +32,9 @@ public class TableHandler : MonoBehaviour
 
 		foreach (TableRow row in TableObj.Rows)
 		{
-			if (!row.IsVisible)
+			if (!row.IsVisible || (_OnlyFinalists && !row.Team.IsFinalist))
 				continue;
-
+			
 			GameObject newTeam = Instantiate(TeamItemPrefab) as GameObject;
 
 			TeamListItem item = newTeam.GetComponent<TeamListItem>();

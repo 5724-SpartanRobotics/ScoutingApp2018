@@ -48,6 +48,6 @@ namespace ScoutingApp
 	public abstract class BaseSerializableData
 	{
 		public abstract void Serialize(BinaryWriter writer);
-		public abstract void Deserialize(BinaryReader reader);
+		public abstract void Deserialize(BinaryReader reader, bool value1 = false);
 	}
 }
