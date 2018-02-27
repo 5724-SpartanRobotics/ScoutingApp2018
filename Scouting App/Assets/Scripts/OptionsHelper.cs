@@ -1,4 +1,6 @@
+using ScoutingApp.GameData;
 using System.IO;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using ZXing.QrCode.Internal;
@@ -32,6 +34,38 @@ public class OptionsHelper : MonoBehaviour
 		QRErrorCorrectionLevelSelector.value = Options.Inst.QRErrorCorrection == ErrorCorrectionLevel.L ? 0 :
 			Options.Inst.QRErrorCorrection == ErrorCorrectionLevel.M ? 1 :
 			Options.Inst.QRErrorCorrection == ErrorCorrectionLevel.Q ? 2 : 3;
+	}
+
+	public void ExportToCSV()
+	{
+		StringBuilder sb = new StringBuilder();
+
+		foreach (Team team in DataStorage.Instance.Teams)
+		{
+			team.Matches.ForEach(x =>
+			{
+				sb.Append($"{team.TeamNum},{x.MatchNum},{x.MovedInAuto},{x.MatchPos.ToString()}," +
+				$"{x.RobotPos.ToString()},{x.AutoScoreItem1},{x.AutoScoreItem2},{x.AutoScoreItem3}," +
+				$"{x.ScoreItem1},{x.ScoreItem2},{x.ScoreItem3},{x.DefenseAbility},{x.Parked},{x.EndgameAbility}," +
+				$"{x.WorksPostMatch},{x.Excluded},{x.Timestamp.ToString("YYYY-MM-dd HH:mm:ss.ffff")},");
+
+				if (x.Comments.Contains("\r") || x.Comments.Contains("\n") || x.Comments.Contains(",") ||
+					x.Comments.Contains("\""))
+				{
+					sb.Append("\"");
+					sb.Append(x.Comments.Replace("\"", "\"\""));
+					sb.Append("\"");
+				}
+				else
+				{
+					sb.Append(x.Comments);
+				}
+
+				sb.Append("\n");
+			});
+		}
+
+		Debug.Log(sb.ToString());
 	}
 
 	public void ClickNFCToggle()
