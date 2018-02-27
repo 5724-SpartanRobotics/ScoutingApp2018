@@ -7,7 +7,7 @@ using System.Text;
 using UnityEngine;
 
 namespace ScoutingApp.GameData
-{
+{// TODO add robot position to statistics page
 	public class DataStorage
 	{
 		private static DataStorage _Inst;
@@ -509,6 +509,7 @@ namespace ScoutingApp.GameData
 	public class Match : BaseSerializableData, IComparable<Match>
 	{
 		public MatchPosition MatchPos { get; set; }
+		public RobotPosition RobotPos { get; set; }
 		public ushort MatchNum { get; set; }
 		public int AutoScoreItem1 { get; set; }
 		public int AutoScoreItem2 { get; set; }
@@ -577,6 +578,7 @@ namespace ScoutingApp.GameData
 			writer.Write(bools[0]);
 
 			writer.Write((byte)MatchPos);
+			writer.Write((byte)RobotPos);
 			SerializerHelper.WriteString(writer, Comments);
 		}
 
@@ -601,6 +603,7 @@ namespace ScoutingApp.GameData
 			Excluded = bools[3];
 
 			MatchPos = (MatchPosition)reader.ReadByte();
+			RobotPos = (RobotPosition)reader.ReadByte();
 			Comments = SerializerHelper.ReadString(reader);
 		}
 
@@ -619,5 +622,12 @@ namespace ScoutingApp.GameData
 		BLUE1 = 3,
 		BLUE2 = 4,
 		BLUE3 = 5
+	}
+
+	public enum RobotPosition : byte
+	{
+		LEFT = 0,
+		CENTER = 1,
+		RIGHT = 2,
 	}
 }

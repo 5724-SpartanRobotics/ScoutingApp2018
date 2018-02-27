@@ -9,7 +9,8 @@ public class StandScouting : MonoBehaviour
 {
 	public InputField TeamNumber;
 	public InputField MatchNumber;
-	public Dropdown Position;
+	public Dropdown TeamPosition;
+	public Dropdown RobotPosition;
 	public Toggle RobotMoved;
 	public IntScoreItem AutoScoreItem1;
 	public IntScoreItem AutoScoreItem2;
@@ -78,7 +79,8 @@ public class StandScouting : MonoBehaviour
 					TeamNumber.text = SerializerHelper.ReadString(reader);
 					MatchNumber.text = SerializerHelper.ReadString(reader);
 					Comments.text = SerializerHelper.ReadString(reader);
-					Position.value = reader.ReadInt32();
+					TeamPosition.value = reader.ReadInt32();
+					RobotPosition.value = reader.ReadInt32();
 					RobotMoved.isOn = reader.ReadBoolean();
 					AutoScoreItem1.Value = reader.ReadInt32();
 					AutoScoreItem2.Value = reader.ReadInt32();
@@ -118,7 +120,8 @@ public class StandScouting : MonoBehaviour
 					SerializerHelper.WriteString(writer, TeamNumber.text);
 					SerializerHelper.WriteString(writer, MatchNumber.text);
 					SerializerHelper.WriteString(writer, Comments.text);
-					writer.Write(Position.value);
+					writer.Write(TeamPosition.value);
+					writer.Write(RobotPosition.value);
 					writer.Write(RobotMoved.isOn);
 					writer.Write(AutoScoreItem1.Value);
 					writer.Write(AutoScoreItem2.Value);
@@ -159,7 +162,8 @@ public class StandScouting : MonoBehaviour
 	{
 		TeamNumber.text = string.Empty;
 		MatchNumber.text = string.Empty;
-		Position.value = 0;
+		TeamPosition.value = 0;
+		RobotPosition.value = 0;
 		RobotMoved.isOn = false;
 		AutoScoreItem1.Value = 0;
 		AutoScoreItem2.Value = 0;
@@ -202,7 +206,8 @@ public class StandScouting : MonoBehaviour
 		Match match = new Match
 		{
 			MatchNum = ushort.Parse(MatchNumber.text),
-			MatchPos = (MatchPosition)Position.value,
+			MatchPos = (MatchPosition)TeamPosition.value,
+			RobotPos = (RobotPosition)RobotPosition.value,
 			MovedInAuto = RobotMoved.isOn,
 			AutoScoreItem1 = AutoScoreItem1.Value,
 			AutoScoreItem2 = AutoScoreItem2.Value,

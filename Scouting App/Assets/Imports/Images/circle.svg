@@ -1,0 +1,6 @@
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+	<mask id="mask">
+		<circle r="80" cy="100" cx="100" stroke-width="40" stroke="#FFF" fill="#000" />
+	</mask>
+	<rect mask="url(#mask)" x="0" y="0" width="200" height="200" fill="#FFF"/>
+</svg>

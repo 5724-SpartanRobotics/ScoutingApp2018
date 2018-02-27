@@ -11,6 +11,7 @@ public class ViewTeam : MonoBehaviour
 
 	private Team _Team;
 	public TextValueItem AvgStatTemplate;
+	public CircleTextValueItem AvgPercentStatTemplate;
 	public Text TeamName;
 	public Text TeamNumber;
 	public Text Comments;
@@ -40,12 +41,13 @@ public class ViewTeam : MonoBehaviour
 
 		if (!string.IsNullOrEmpty(_Team.TeamName))
 			TeamName.text = _Team.TeamName;
-		TeamNumber.text = "Team " + _Team.TeamNum.ToString();
+		TeamNumber.text = _Team.TeamNum.ToString();
 
-		if (_Team.AvgMatches.Count != 0)
+		if (_Team.AvgMatches.Count != 0) // TODO add more circles to compare to the best team for all other numbers
 		{
 			AvgStatTemplate.gameObject.SetActive(true);
-			TextValueItem autoMoveAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			AvgPercentStatTemplate.gameObject.SetActive(true);
+			CircleTextValueItem autoMoveAvg = Instantiate(AvgPercentStatTemplate, AvgPercentStatTemplate.transform.parent);
 			TextValueItem autoItem1Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			TextValueItem autoItem2Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			TextValueItem autoItem3Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
@@ -53,12 +55,13 @@ public class ViewTeam : MonoBehaviour
 			TextValueItem item2Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			TextValueItem item3Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			TextValueItem defenseAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
-			TextValueItem parkAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			CircleTextValueItem parkAvg = Instantiate(AvgPercentStatTemplate, AvgPercentStatTemplate.transform.parent);
 			TextValueItem endgameAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			AvgStatTemplate.gameObject.SetActive(false);
+			AvgPercentStatTemplate.gameObject.SetActive(false);
 
-			autoMoveAvg.KeyText.text = "% time crosses baseline in auto: ";
-			autoMoveAvg.ValueText.text = ToPercent(_Team.MovedInAutoAvg);
+			autoMoveAvg.KeyText.text = "Crosses Autoline: ";
+			autoMoveAvg.ValueCircle.AnimateToValue((float)_Team.MovedInAutoAvg);
 			autoItem1Avg.KeyText.text = "Auto scale score average: ";
 			autoItem1Avg.ValueText.text = ToRoundStr(_Team.AutoItem1Avg);
 			autoItem2Avg.KeyText.text = "Auto alliance switch score average: ";
@@ -72,8 +75,8 @@ public class ViewTeam : MonoBehaviour
 			item2Avg.ValueText.text = ToRoundStr(_Team.Item2Avg);
 			item3Avg.KeyText.text = "Average vault cubes scored: ";
 			item3Avg.ValueText.text = ToRoundStr(_Team.Item3Avg);
-			parkAvg.KeyText.text = "Average park percentage: ";
-			parkAvg.ValueText.text = ToPercent(_Team.ParkAvg);
+			parkAvg.KeyText.text = "Park average: ";
+			parkAvg.ValueCircle.AnimateToValue((float)_Team.ParkAvg);
 			endgameAvg.KeyText.text = "Average rope climbing ability: ";
 			endgameAvg.ValueText.text = ToRoundStr(_Team.EndgameAvg);
 			defenseAvg.KeyText.text = "Average defense ability: ";
@@ -82,7 +85,7 @@ public class ViewTeam : MonoBehaviour
 			Comments.text = _Team.Comments;
 		}
 
-		
+
 		if (_Team.IsFinalist)
 		{
 			FinalistText.text = "Unselect As Finalist";

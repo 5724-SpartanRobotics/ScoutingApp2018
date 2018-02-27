@@ -17,13 +17,15 @@
 
     <uses-permission android:name="android.permission.NFC" />
 
-    <application android:label="@string/app_name" >
+    <application android:label="@string/app_name"
+			android:icon="@mipmap/ic_launcher"
+			android:roundIcon="@mipmap/ic_launcher_round" >
+			
         <activity
             android:name="us.shsrobotics.scoutingapp.androidnfchelper.OverrideActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
 			android:theme="@style/UnityThemeSelector"
-			android:icon="@mipmap/app_icon"
 			android:screenOrientation="sensorPortrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
