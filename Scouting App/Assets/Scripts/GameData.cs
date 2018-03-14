@@ -354,6 +354,54 @@ namespace ScoutingApp.GameData
 			}
 		}
 
+		private double _EndgamePercent = DEFAULT;
+
+		public double EndgamePercent
+		{
+			get
+			{
+				if (_EndgamePercent == DEFAULT && AvgMatches.Count > 0)
+					_EndgamePercent = AvgMatches.Average(match => match.EndgameAbility == 0 ? 0 : 1);
+				return _EndgamePercent;
+			}
+		}
+
+		private double _LeftPosPercent = DEFAULT;
+
+		public double LeftPosPercent
+		{
+			get
+			{
+				if (_LeftPosPercent == DEFAULT && AvgMatches.Count > 0)
+					_LeftPosPercent = AvgMatches.Average(match => match.RobotPos == RobotPosition.LEFT ? 1 : 0);
+				return _LeftPosPercent;
+			}
+		}
+
+		private double _CenterPosPercent = DEFAULT;
+
+		public double CenterPosPercent
+		{
+			get
+			{
+				if (_CenterPosPercent == DEFAULT && AvgMatches.Count > 0)
+					_CenterPosPercent = AvgMatches.Average(match => match.RobotPos == RobotPosition.CENTER ? 1 : 0);
+				return _CenterPosPercent;
+			}
+		}
+
+		private double _RightPosPercent = DEFAULT;
+
+		public double RightPosPercent
+		{
+			get
+			{
+				if (_RightPosPercent == DEFAULT && AvgMatches.Count > 0)
+					_RightPosPercent = AvgMatches.Average(match => match.RobotPos == RobotPosition.RIGHT ? 1 : 0);
+				return _RightPosPercent;
+			}
+		}
+
 		public bool NotBroken
 		{
 			get
@@ -447,16 +495,20 @@ namespace ScoutingApp.GameData
 			_Matches.Add(match);
 			_Matches.Sort();
 
-			_AutoItem1Avg = DEFAULT;
-			_AutoItem2Avg = DEFAULT;
-			_AutoItem3Avg = DEFAULT;
-			_MovedInAutoAvg = DEFAULT;
-			_Item1Avg = DEFAULT;
-			_Item2Avg = DEFAULT;
-			_Item3Avg = DEFAULT;
-			_ParkAvg = DEFAULT;
-			_EndgameAvg = DEFAULT;
-			_DefenseAvg = DEFAULT;
+			_AutoItem1Avg =
+				_AutoItem2Avg =
+				_AutoItem3Avg =
+				_MovedInAutoAvg =
+				_Item1Avg =
+				_Item2Avg =
+				_Item3Avg =
+				_ParkAvg =
+				_EndgameAvg =
+				_DefenseAvg =
+				_EndgamePercent =
+				_LeftPosPercent =
+				_CenterPosPercent =
+				_RightPosPercent = DEFAULT;
 		}
 
 		public void OverrideBroken()

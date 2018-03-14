@@ -8,8 +8,9 @@ public class CirclePercent : MonoBehaviour
 	public Text PercentText;
 	private float _AnimState;
 	public float Percent;
-	private float _LastPercent;
+	private bool _IsDirty = false;
 	private bool _Animating = false;
+	private string _NonPercentText = null;
 
 	private void RedrawCircle(float value)
 	{
@@ -19,10 +20,13 @@ public class CirclePercent : MonoBehaviour
 
 	private void Update()
 	{
-		if (_LastPercent != Percent)
+		if (_IsDirty)
 		{
-			_LastPercent = Percent;
-			PercentText.text = (Math.Round(Percent * 1000) / 10).ToString() + "%";
+			if (_NonPercentText == null)
+				PercentText.text = (Math.Round(Percent * 1000) / 10).ToString() + "%";
+			else
+				PercentText.text = _NonPercentText;
+
 			RedrawCircle(Percent);
 		}
 
@@ -44,10 +48,18 @@ public class CirclePercent : MonoBehaviour
 		}
 	}
 
-	public void AnimateToValue(float percent)
+	/// <summary>
+	/// Animates to the given value and sets the text to <paramref name="text"/>,
+	/// or <paramref name="percent"/> if <paramref name="text"/> is null.
+	/// </summary>
+	/// <param name="percent">A Value between 0 and 1 (inclusive) that represents a percentage.</param>
+	/// <param name="text">If not null, the text to display in the center of the circle instead of the percent</param>
+	public void AnimateToValue(float percent, string text = null)
 	{
+		_IsDirty = true;
 		_Animating = true;
 		_AnimState = Percent;
 		Percent = percent;
+		_NonPercentText = text;
 	}
 }

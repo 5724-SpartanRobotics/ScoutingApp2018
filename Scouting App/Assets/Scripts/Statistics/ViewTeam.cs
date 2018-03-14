@@ -47,6 +47,9 @@ public class ViewTeam : MonoBehaviour
 		{
 			AvgStatTemplate.gameObject.SetActive(true);
 			AvgPercentStatTemplate.gameObject.SetActive(true);
+			TextValueItem totalAvgCubes = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			TextValueItem autoAvgCubes = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			TextValueItem teleopAvgCubes = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			CircleTextValueItem autoMoveAvg = Instantiate(AvgPercentStatTemplate, AvgPercentStatTemplate.transform.parent);
 			TextValueItem autoItem1Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			TextValueItem autoItem2Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
@@ -54,11 +57,25 @@ public class ViewTeam : MonoBehaviour
 			TextValueItem item1Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			TextValueItem item2Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
 			TextValueItem item3Avg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
-			TextValueItem defenseAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			CircleTextValueItem defenseAvg = Instantiate(AvgPercentStatTemplate, AvgPercentStatTemplate.transform.parent);
 			CircleTextValueItem parkAvg = Instantiate(AvgPercentStatTemplate, AvgPercentStatTemplate.transform.parent);
-			TextValueItem endgameAvg = Instantiate(AvgStatTemplate, AvgStatTemplate.transform.parent);
+			CircleTextValueItem endgamePercent = Instantiate(AvgPercentStatTemplate, AvgPercentStatTemplate.transform.parent);
+			CircleTextValueItem endgameAvg = Instantiate(AvgPercentStatTemplate, AvgPercentStatTemplate.transform.parent);
+			CircleTextValueItem percentLeft = Instantiate(AvgPercentStatTemplate, AvgPercentStatTemplate.transform.parent);
+			CircleTextValueItem percentCenter = Instantiate(AvgPercentStatTemplate, AvgPercentStatTemplate.transform.parent);
+			CircleTextValueItem percentRight = Instantiate(AvgPercentStatTemplate, AvgPercentStatTemplate.transform.parent);
 			AvgStatTemplate.gameObject.SetActive(false);
 			AvgPercentStatTemplate.gameObject.SetActive(false);
+
+			float autoAvgCubesVal = (float)(_Team.AutoItem1Avg + _Team.AutoItem2Avg + _Team.AutoItem3Avg);
+			float teleopAvgCubesVal = (float)(_Team.Item1Avg + _Team.Item2Avg + _Team.Item3Avg);
+
+			totalAvgCubes.KeyText.text = "Powercube / match average: ";
+			totalAvgCubes.ValueText.text = ToRoundStr(autoAvgCubesVal + teleopAvgCubesVal);
+			autoAvgCubes.KeyText.text = "Auto powercube / match average: ";
+			autoAvgCubes.ValueText.text = ToRoundStr(autoAvgCubesVal);
+			teleopAvgCubes.KeyText.text = "Teleop powercube / match average: ";
+			teleopAvgCubes.ValueText.text = ToRoundStr(teleopAvgCubesVal);
 
 			autoMoveAvg.KeyText.text = "Crosses Autoline: ";
 			autoMoveAvg.ValueCircle.AnimateToValue((float)_Team.MovedInAutoAvg);
@@ -77,10 +94,19 @@ public class ViewTeam : MonoBehaviour
 			item3Avg.ValueText.text = ToRoundStr(_Team.Item3Avg);
 			parkAvg.KeyText.text = "Park average: ";
 			parkAvg.ValueCircle.AnimateToValue((float)_Team.ParkAvg);
-			endgameAvg.KeyText.text = "Average rope climbing ability: ";
-			endgameAvg.ValueText.text = ToRoundStr(_Team.EndgameAvg);
-			defenseAvg.KeyText.text = "Average defense ability: ";
-			defenseAvg.ValueText.text = ToRoundStr(_Team.DefenseAvg);
+			endgamePercent.KeyText.text = "Average rope climbing percent: ";
+			endgamePercent.ValueCircle.AnimateToValue((float)_Team.EndgamePercent);
+			endgameAvg.KeyText.text = "Average rope climbing rating: ";
+			endgameAvg.ValueCircle.AnimateToValue((float)_Team.EndgameAvg / 2F, ToRoundStr(_Team.EndgameAvg) + "/2");
+			defenseAvg.KeyText.text = "Average defense rating: ";
+			defenseAvg.ValueCircle.AnimateToValue((float)_Team.DefenseAvg / 2F, ToRoundStr(_Team.DefenseAvg) + "/2");
+
+			percentLeft.KeyText.text = "Left Position Percentage";
+			percentLeft.ValueCircle.AnimateToValue((float)_Team.LeftPosPercent);
+			percentCenter.KeyText.text = "Center Position Percentage";
+			percentCenter.ValueCircle.AnimateToValue((float)_Team.CenterPosPercent);
+			percentRight.KeyText.text = "Right Position Percentage";
+			percentRight.ValueCircle.AnimateToValue((float)_Team.RightPosPercent);
 
 			Comments.text = _Team.Comments;
 		}
@@ -191,6 +217,8 @@ public class ViewTeam : MonoBehaviour
 		Match match = _Team.Matches[index];
 
 		MatchStatTemplate.gameObject.SetActive(true);
+		TextValueItem teamPosition = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
+		TextValueItem robotPosition = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
 		TextValueItem autoMove = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
 		TextValueItem autoItem1 = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
 		TextValueItem autoItem2 = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
@@ -203,7 +231,12 @@ public class ViewTeam : MonoBehaviour
 		TextValueItem endgame = Instantiate(MatchStatTemplate, MatchStatTemplate.transform.parent);
 		MatchStatTemplate.gameObject.SetActive(false);
 
-		autoMove.KeyText.text = "Crossed baseline in auto: ";
+		teamPosition.KeyText.text = "Team position: ";
+		teamPosition.ValueText.text = match.MatchPos.ToString();
+		robotPosition.KeyText.text = "Robot position: ";
+		robotPosition.ValueText.text = match.RobotPos.ToString();
+
+		autoMove.KeyText.text = "Crossed autoline in auto: ";
 		autoMove.ValueText.text = match.MovedInAuto.ToString();
 		autoItem1.KeyText.text = "Auto scale powercubes scored: ";
 		autoItem1.ValueText.text = match.AutoScoreItem1.ToString();
