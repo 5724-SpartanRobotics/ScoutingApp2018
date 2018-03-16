@@ -81,7 +81,54 @@ namespace ScoutingApp.GameData
 			}
 			else
 			{
-				throw new NotImplementedException();
+				MemoryStream memstr = stream as MemoryStream;
+
+				if (memstr == null)
+				{
+					memstr = new MemoryStream();
+					stream.CopyTo(memstr);
+				}
+
+
+				string s = Encoding.UTF8.GetString(memstr.ToArray());
+
+				while (s.Length > 0)
+				{
+					string[] lenAndStr = s.Split(new char[] { '|' }, 2);
+
+					int len = int.Parse(lenAndStr[0]);
+
+					string matchStr = lenAndStr[0].Substring(0, len);
+					s = lenAndStr[1].Substring(len);
+
+					string[] parts = matchStr.Split(new char[] { '|' }, 9);
+
+					Team team = new Team
+					{
+						TeamNum = ushort.Parse(parts[0])
+					};
+
+					Match match = new Match
+					{
+						MatchNum = ushort.Parse(parts[1]),
+						AutoScoreItem1 = ushort.Parse(parts[2]),
+						AutoScoreItem2 = ushort.Parse(parts[3]),
+						AutoScoreItem3 = ushort.Parse(parts[4]),
+						ScoreItem1 = ushort.Parse(parts[5]),
+						ScoreItem2 = ushort.Parse(parts[6]),
+						ScoreItem3 = ushort.Parse(parts[7]),
+						MovedInAuto = parts[8][0] == '1',
+						Parked = parts[8][1] == '1',
+						EndgameAbility = byte.Parse(parts[8][2].ToString()),
+						DefenseAbility = byte.Parse(parts[8][3].ToString()),
+						MatchPos = (MatchPosition)byte.Parse(parts[8][4].ToString()),
+						RobotPos = (RobotPosition)byte.Parse(parts[8][5].ToString()),
+						Comments = parts[8].Substring(6)
+					};
+
+					team.Matches.Add(match);
+					Teams.Add(team);
+				}
 			}
 		}
 
