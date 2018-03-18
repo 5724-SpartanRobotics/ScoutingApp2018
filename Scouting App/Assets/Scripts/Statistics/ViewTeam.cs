@@ -250,7 +250,7 @@ public class ViewTeam : MonoBehaviour
 		item2.KeyText.text = "Switch powercubes scored: ";
 		item2.ValueText.text = match.ScoreItem2.ToString();
 		item3.KeyText.text = "Vault powercubes scored: ";
-		item3.ValueText.text = match.ScoreItem2.ToString();
+		item3.ValueText.text = match.ScoreItem3.ToString();
 
 		defense.KeyText.text = "Defense rating: ";
 		defense.ValueText.text = match.DefenseAbility.ToString();

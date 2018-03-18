@@ -305,7 +305,7 @@ namespace ScoutingApp.GameData
 		{
 			get
 			{
-				if (_EndgameAvg == DEFAULT && AvgMatches.Count > 0)
+				if (_AutoItem1Avg == DEFAULT && AvgMatches.Count > 0)
 					_AutoItem1Avg = AvgMatches.Average(match => match.AutoScoreItem1);
 				return _AutoItem1Avg;
 			}
